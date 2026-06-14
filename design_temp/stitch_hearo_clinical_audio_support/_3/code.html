@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>היסטוריה וסטטיסטיקה</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#e5e2df",
+                      "on-secondary-container": "#796046",
+                      "secondary-fixed-dim": "#e1c1a2",
+                      "tertiary-fixed-dim": "#accbe0",
+                      "on-error-container": "#93000a",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed": "#001e2d",
+                      "primary": "#416562",
+                      "surface-tint": "#416562",
+                      "surface-dim": "#ddd9d6",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "secondary": "#725a41",
+                      "primary-fixed": "#c3eae7",
+                      "surface": "#fdf9f6",
+                      "on-tertiary-fixed-variant": "#2d4a5c",
+                      "secondary-fixed": "#ffdcbd",
+                      "outline": "#717977",
+                      "primary-container": "#769b98",
+                      "on-primary-fixed-variant": "#294d4a",
+                      "surface-container-high": "#ebe7e4",
+                      "background": "#fdf9f6",
+                      "on-secondary-fixed-variant": "#59422b",
+                      "inverse-on-surface": "#f4f0ed",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#103041",
+                      "primary-fixed-dim": "#a8cecb",
+                      "tertiary-fixed": "#c8e7fd",
+                      "on-primary-container": "#0b3230",
+                      "inverse-primary": "#a8cecb",
+                      "tertiary-container": "#7a98ac",
+                      "on-background": "#1c1b1a",
+                      "surface-container-low": "#f7f3f0",
+                      "on-primary-fixed": "#00201e",
+                      "outline-variant": "#c0c8c7",
+                      "error-container": "#ffdad6",
+                      "secondary-container": "#ffdcbd",
+                      "surface-bright": "#fdf9f6",
+                      "inverse-surface": "#31302f",
+                      "tertiary": "#456275",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#f1edea",
+                      "on-surface": "#1c1b1a",
+                      "on-secondary-fixed": "#291805",
+                      "surface-container-highest": "#e5e2df",
+                      "on-surface-variant": "#414847",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "gutter": "16px",
+                      "touch-target": "48px",
+                      "safe-margin": "24px",
+                      "section-gap": "40px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-image: linear-gradient(to bottom, var(--tw-colors-background), var(--tw-colors-surface-container-low));
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(65, 101, 98, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background bg-background pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-surface/40 dark:bg-surface-dim/40 backdrop-blur-xl shadow-sm shadow-primary/10 transition-all duration-300 ease-in-out">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed text-2xl hover:opacity-80 transition-opacity cursor-pointer">arrow_forward</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed">HearO</h1>
+</div>
+<div class="flex-1"></div>
+</header>
+<main class="pt-24 px-safe-margin max-w-3xl mx-auto space-y-section-gap">
+<!-- Header -->
+<div class="text-center space-y-4">
+<h2 class="font-headline-md text-headline-md-mobile md:text-headline-md text-on-surface">היסטוריה וסטטיסטיקה</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">התקדמות המסע שלך לרגיעה, צעד אחר צעד.</p>
+</div>
+<!-- Stats Dashboard Bento -->
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary text-3xl mb-2" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary">42</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-1">סה"כ סשנים</span>
+</div>
+<div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-tertiary text-3xl mb-2" style="font-variation-settings: 'FILL' 1;">timer</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-tertiary">315</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-1">דקות תרגול</span>
+</div>
+<div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center text-center col-span-2 md:col-span-1 bg-primary-container/20 border-primary/10">
+<span class="material-symbols-outlined text-secondary text-3xl mb-2" style="font-variation-settings: 'FILL' 1;">trending_down</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-secondary">-4.2</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-1">שיפור ממוצע בלחץ</span>
+</div>
+</div>
+<!-- Progress Chart Area (Visual placeholder) -->
+<div class="glass-card rounded-3xl p-6 h-48 relative overflow-hidden flex items-end justify-between px-8">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent"></div>
+<!-- Decorative bars -->
+<div class="w-8 bg-primary/20 rounded-t-lg h-1/4"></div>
+<div class="w-8 bg-primary/30 rounded-t-lg h-2/4"></div>
+<div class="w-8 bg-primary/40 rounded-t-lg h-1/3"></div>
+<div class="w-8 bg-primary/50 rounded-t-lg h-3/4"></div>
+<div class="w-8 bg-primary/60 rounded-t-lg h-2/3"></div>
+<div class="w-8 bg-primary rounded-t-lg h-full"></div>
+<div class="absolute top-4 right-6 font-body-md text-body-md text-on-surface-variant">התקדמות חודשית</div>
+</div>
+<!-- Chronological Journal -->
+<div class="space-y-4">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-4">היומן שלך</h3>
+<!-- Journal Card 1 -->
+<div class="glass-card rounded-2xl p-5 flex items-center justify-between transition-transform hover:scale-[1.01] duration-300">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">nature</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-medium">יער שקט</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant mt-1">היום, 14:30 • 10 דקות</div>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-secondary-container/50 px-3 py-1.5 rounded-full">
+<span class="font-body-md text-body-md text-secondary">7</span>
+<span class="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
+<span class="font-body-md text-body-md text-secondary font-semibold">2</span>
+</div>
+</div>
+<!-- Journal Card 2 -->
+<div class="glass-card rounded-2xl p-5 flex items-center justify-between transition-transform hover:scale-[1.01] duration-300">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">water</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-medium">גלי ים</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant mt-1">אתמול, 09:15 • 15 דקות</div>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-secondary-container/50 px-3 py-1.5 rounded-full">
+<span class="font-body-md text-body-md text-secondary">6</span>
+<span class="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
+<span class="font-body-md text-body-md text-secondary font-semibold">3</span>
+</div>
+</div>
+<!-- Journal Card 3 -->
+<div class="glass-card rounded-2xl p-5 flex items-center justify-between transition-transform hover:scale-[1.01] duration-300">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_cafe</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-medium">בית קפה שקט</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant mt-1">12 באוקטובר • 5 דקות</div>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-secondary-container/50 px-3 py-1.5 rounded-full">
+<span class="font-body-md text-body-md text-secondary">8</span>
+<span class="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
+<span class="font-body-md text-body-md text-secondary font-semibold">4</span>
+</div>
+</div>
+</div>
+<!-- Reset Button -->
+<div class="flex justify-center pt-8">
+<button class="font-body-md text-body-md text-outline hover:text-error transition-colors px-6 py-3 rounded-full border border-outline-variant hover:border-error flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">delete_outline</span>
+                איפוס היסטוריה
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 bg-surface/60 dark:bg-surface-container/60 backdrop-blur-2xl shadow-[0_-4px_30px_rgba(65,101,98,0.1)] rounded-t-[32px] md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:scale-105 transition-transform active:scale-95 duration-500 ease-out">
+<span class="material-symbols-outlined mb-1">home_app_logo</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container/50 dark:bg-primary-container text-on-primary-container rounded-full px-5 py-1.5 hover:scale-105 transition-transform active:scale-95 duration-500 ease-out">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-caps text-label-caps">History</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:scale-105 transition-transform active:scale-95 duration-500 ease-out">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</button>
+</nav>
+<!-- Web Desktop Nav (Hidden on Mobile) -->
+<nav class="hidden md:flex fixed top-0 left-0 h-16 items-center px-6 gap-8 z-50 pointer-events-none w-full justify-end">
+<div class="flex gap-6 pointer-events-auto bg-surface/40 backdrop-blur-xl px-6 py-2 rounded-full shadow-sm">
+<button class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Home</button>
+<button class="font-body-md text-body-md text-primary font-semibold">History</button>
+<button class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Profile</button>
+</div>
+</nav>
+</body></html>
