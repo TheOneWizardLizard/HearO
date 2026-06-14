@@ -29,8 +29,10 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 }) => {
   const [timeLeft, setTimeLeft] = useState(duration * 60); // in seconds
   const [isActive, setIsActive] = useState(true);
-  const [breathState, setBreathState] = useState<'in' | 'out'>('in');
-  const [breathCounter, setBreathCounter] = useState(4); // 4 seconds cycle
+  // Single ticker 0-11 drives the 4-4-4 cycle deterministically
+  const [breathTick, setBreathTick] = useState(0);
+  const breathPhase = breathTick < 4 ? 'inhale' : breathTick < 8 ? 'hold' : 'exhale';
+  const breathTimeLeft = breathTick < 4 ? 4 - breathTick : breathTick < 8 ? 8 - breathTick : 12 - breathTick;
   const [isFinishing, setIsFinishing] = useState(false);
   const [finalSuds, setFinalSuds] = useState(initialSuds);
   
@@ -62,14 +64,8 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           return next;
         });
 
-        // 2. Breathing guide
-        setBreathCounter((prev) => {
-          if (prev <= 1) {
-            setBreathState((state) => (state === 'in' ? 'out' : 'in'));
-            return 4; // Reset to 4s
-          }
-          return prev - 1;
-        });
+        // 2. Breathing guide (4-4-4 box breathing)
+        setBreathTick((prev) => (prev + 1) % 12);
       }, 1000);
     }
     
@@ -127,25 +123,58 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
     return 'Extreme tension, difficulty concentrating / panic';
   };
 
-  // Breathing circle style
-  const breathingCircleStyle = {
-    transform: breathState === 'in' 
-      ? `scale(${1 + (4 - breathCounter) * 0.12})` // Grows from 1.0 to ~1.48
-      : `scale(${1.48 - (4 - breathCounter) * 0.12})`, // Shrinks back
-    backgroundColor: breathState === 'in' 
-      ? `rgba(65, 101, 98, ${0.08 + (4 - breathCounter) * 0.04})` 
-      : `rgba(114, 90, 65, ${0.2 - (4 - breathCounter) * 0.04})`,
-    boxShadow: breathState === 'in'
-      ? `0 0 ${20 + (4 - breathCounter) * 10}px rgba(65, 101, 98, 0.2)`
-      : `0 0 ${60 - (4 - breathCounter) * 10}px rgba(114, 90, 65, 0.2)`,
-    transition: 'transform 1s linear, background-color 1s ease, box-shadow 1s ease',
+  const getBreathStyles = () => {
+    const transition = 'transform 1s ease-in-out, background-color 1s ease, box-shadow 1s ease, border-color 0.5s ease';
+    if (breathPhase === 'inhale') {
+      // breathTimeLeft goes 4→3→2→1, dividing by 3 ensures we reach exactly 1.4 at step=1
+      const scale = 0.7 + ((4 - breathTimeLeft) / 3) * 0.7;
+      return {
+        transform: `scale(${scale})`,
+        backgroundColor: 'rgba(65, 101, 98, 0.08)',
+        boxShadow: '0 0 30px rgba(65, 101, 98, 0.2)',
+        borderColor: '#416562',
+        transition,
+      };
+    } else if (breathPhase === 'hold') {
+      // subtle bubble pulse: alternate ±0.03 each second
+      const scale = breathTimeLeft % 2 === 0 ? 1.43 : 1.40;
+      return {
+        transform: `scale(${scale})`,
+        backgroundColor: 'rgba(114, 90, 65, 0.08)',
+        boxShadow: '0 0 40px rgba(114, 90, 65, 0.2)',
+        borderColor: '#725a41',
+        transition,
+      };
+    } else {
+      // exhale: exact reverse of inhale, 1.4→0.7
+      const scale = 1.4 - ((4 - breathTimeLeft) / 3) * 0.7;
+      return {
+        transform: `scale(${scale})`,
+        backgroundColor: 'rgba(69, 98, 117, 0.08)',
+        boxShadow: '0 0 25px rgba(69, 98, 117, 0.15)',
+        borderColor: '#456275',
+        transition,
+      };
+    }
+  };
+
+  const getBreathLabel = () => {
+    if (breathPhase === 'inhale') return 'Inhale';
+    if (breathPhase === 'hold') return 'Hold';
+    return 'Exhale';
+  };
+
+  const getBreathGuide = () => {
+    if (breathPhase === 'inhale') return 'Breathe in slowly through your nose...';
+    if (breathPhase === 'hold') return 'Hold the air gently in your lungs...';
+    return 'Exhale slowly and fully...';
   };
 
   const phasesList: { id: SessionPhase; num: number; label: string }[] = [
-    { id: 'opening', num: 1, label: 'Preparation' },
-    { id: 'briefing', num: 2, label: 'Guidance' },
-    { id: 'exposure', num: 3, label: 'Exposure' },
-    { id: 'closing', num: 4, label: 'Summary' },
+    { id: 'opening', num: 1, label: 'Prep' },
+    { id: 'briefing', num: 2, label: 'Brief' },
+    { id: 'exposure', num: 3, label: 'Expose' },
+    { id: 'closing', num: 4, label: 'Close' },
   ];
 
   if (isFinishing) {
@@ -202,16 +231,15 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   }
 
   return (
-    <div className="view-container" style={{ position: 'relative', zIndex: 10 }}>
+    <div className="view-container" style={{ position: 'relative', zIndex: 10, gap: '12px' }}>
       {/* Environment Background Card Header */}
-      <div 
+      <div
         style={{
           position: 'relative',
           width: '100%',
-          height: '150px',
-          borderRadius: '24px',
+          height: '100px',
+          borderRadius: '20px',
           overflow: 'hidden',
-          marginTop: '10px',
           boxShadow: 'var(--shadow-md)',
           border: '1px solid rgba(255, 255, 255, 0.4)'
         }}
@@ -290,16 +318,16 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
                   transition: 'background-color 0.5s ease',
                 }}
               />
-              <span 
+              <span
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.7rem',
                   fontWeight: isActivePhase ? '700' : '500',
                   color: isActivePhase ? 'var(--color-primary)' : 'var(--text-muted)',
-                  whiteSpace: 'nowrap',
-                  fontFamily: 'var(--font-display)'
+                  fontFamily: 'var(--font-display)',
+                  textAlign: 'center',
                 }}
               >
-                Phase {phase.num}: {phase.label}
+                {phase.num}. {phase.label}
               </span>
             </div>
           );
@@ -307,73 +335,65 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
       </div>
 
       {/* Control Buttons Row */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', margin: '8px 0' }}>
-        <button 
-          className="btn" 
-          style={{ 
-            width: '56px', 
-            height: '56px', 
-            padding: 0, 
-            borderRadius: '50%',
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+        <button
+          className="btn"
+          style={{
+            width: '44px', height: '44px', padding: 0, borderRadius: '50%',
             backgroundColor: 'rgba(255, 255, 255, 0.5)',
             border: '1px solid rgba(65, 101, 98, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: 'var(--shadow-sm)'
           }}
           onClick={handleToggleActive}
         >
-          {isActive ? <Pause size={24} style={{ color: 'var(--text-primary)' }} /> : <Play size={24} style={{ color: 'var(--text-primary)' }} />}
+          {isActive ? <Pause size={20} style={{ color: 'var(--text-primary)' }} /> : <Play size={20} style={{ color: 'var(--text-primary)' }} />}
         </button>
-        <button 
-          className="btn" 
-          style={{ 
-            width: '56px', 
-            height: '56px', 
-            padding: 0, 
-            borderRadius: '50%', 
+        <button
+          className="btn"
+          style={{
+            width: '44px', height: '44px', padding: 0, borderRadius: '50%',
             backgroundColor: 'rgba(255, 255, 255, 0.5)',
             border: '1px solid rgba(65, 101, 98, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--color-sos)',
             boxShadow: 'var(--shadow-sm)'
           }}
           onClick={handleSessionFinished}
         >
-          <Square size={20} fill="currentColor" />
+          <Square size={16} fill="currentColor" />
         </button>
       </div>
 
-      {/* Pulsing Breathing Visualizer */}
-      <div className="breathing-circle-outer" style={{ margin: '15px auto' }}>
-        <div 
-          className="breathing-bubble" 
-          style={{
-            ...breathingCircleStyle,
-            transform: `translate(-50%, -50%) ${breathingCircleStyle.transform}`
-          }}
-        ></div>
-        <div className="breathing-circle-inner" style={breathingCircleStyle}>
-          <div className="breathing-timer" style={{ fontFamily: 'var(--font-display)' }}>{formatTime(timeLeft)}</div>
+      {/* Session Timer */}
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '2rem',
+          fontWeight: '700',
+          fontFeatureSettings: '"tnum"',
+          color: 'var(--color-primary)',
+          letterSpacing: '-0.03em',
+        }}>
+          {formatTime(timeLeft)}
+        </div>
+      </div>
+
+      {/* Breathing Circle — 4-4-4 box breathing */}
+      <div className="breathing-circle-outer" style={{ margin: '0 auto' }}>
+        <div className="breathing-circle-inner" style={getBreathStyles()}>
+          <div className="breathing-timer" style={{ fontFamily: 'var(--font-display)' }}>{breathTimeLeft}</div>
           <div className="breathing-text" style={{ fontFamily: 'var(--font-display)', fontWeight: '600' }}>
-            {breathState === 'in' ? 'Inhale...' : 'Exhale...'}
-          </div>
-          <div style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '2px' }}>
-            {breathCounter}s
+            {getBreathLabel()}
           </div>
         </div>
       </div>
 
-      {/* Guide text / Clinical support message */}
-      <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.95rem', minHeight: '44px', padding: '0 10px', lineHeight: '1.5' }}>
+      {/* Guide text */}
+      <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', padding: '0 10px', lineHeight: '1.4' }}>
         {isActive ? (
           <p className="pulse-animation" style={{ fontWeight: '500' }}>
-            {breathState === 'in' 
-              ? 'Let your lungs fill with soothing air...' 
-              : 'Release the tension along with your breath...'}
+            {getBreathGuide()}
           </p>
         ) : (
           <p style={{ color: 'var(--color-sos)', fontWeight: '600' }}>Session paused. Take a deep breath and resume when you feel ready.</p>
