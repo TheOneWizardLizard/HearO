@@ -183,8 +183,7 @@ export class AudioEngine {
   private voiceoverSource: AudioBufferSourceNode | null = null;
   private activeTriggerSources: AudioBufferSourceNode[] = [];
   
-  // Intervals/Timeouts - Deprecated in favor of scheduled ticks
-  private spikeInterval: number | null = null;
+
   
   // Spikes scheduler state
   private exposureStartSeconds: number | null = null;
@@ -290,7 +289,7 @@ export class AudioEngine {
     if (!this.ctx) return false;
     
     if (this.onFallbackTriggered) {
-      this.onFallbackTriggered('טוען קבצי מדיה...');
+      this.onFallbackTriggered('Loading media files...');
     }
 
     try {
@@ -330,13 +329,13 @@ export class AudioEngine {
       }
 
       if (this.onFallbackTriggered) {
-        this.onFallbackTriggered('טעינת המדיה הושלמה בהצלחה');
+        this.onFallbackTriggered('Media preloaded successfully');
       }
       return true;
     } catch (err) {
       console.error('Error preloading audio files, playing synthesized fallbacks', err);
       if (this.onFallbackTriggered) {
-        this.onFallbackTriggered('שגיאת טעינה. מפעיל סאונד מסונתז כגיבוי.');
+        this.onFallbackTriggered('Loading error. Activating synthesized backup audio.');
       }
       return false;
     }

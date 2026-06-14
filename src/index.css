@@ -68,7 +68,7 @@ body {
   min-height: 100vh;
   min-height: 100svh;
   line-height: 1.6;
-  direction: rtl; /* Hebrew RTL */
+  direction: ltr; /* English LTR */
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }

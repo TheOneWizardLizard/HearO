@@ -19,16 +19,16 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
 
   // 5-4-3-2-1 Grounding States
   const [groundingSteps, setGroundingSteps] = useState([
-    { id: 5, text: 'דברים שאתה רואה סביבך', desc: 'התבונן סביב ומצא 5 חפצים שונים (כמו מנורה, תמונה, כיסא).', completed: false },
-    { id: 4, text: 'דברים שאתה יכול לחוש בגוף', desc: 'שים לב ל-4 תחושות מגע פיזיות (כמו הבגד על העור, כפות הרגליים על הרצפה).', completed: false },
-    { id: 3, text: 'דברים שאתה שומע ברגע זה', desc: 'הקשב היטב ומצא 3 קולות (כמו רעש מזגן, זמזום מרחוק, ציוץ ציפורים).', completed: false },
-    { id: 2, text: 'דברים שאתה יכול להריח', desc: 'שים לב ל-2 ריחות בסביבה שלך (כמו ריח קפה, בושם או פשוט אוויר נקי).', completed: false },
-    { id: 1, text: 'דבר אחד שאתה יכול לטעום', desc: 'שים לב לטעם בפה או קח שלוק מים כדי לחוש בטעם אחד.', completed: false },
+    { id: 5, text: 'Things you see around you', desc: 'Look around and find 5 different objects (e.g., lamp, picture, chair).', completed: false },
+    { id: 4, text: 'Things you can physically feel', desc: 'Pay attention to 4 physical touch sensations (e.g., clothing on skin, feet on the floor).', completed: false },
+    { id: 3, text: 'Things you hear right now', desc: 'Listen closely and find 3 sounds (e.g., air conditioning hum, distant buzz, birds chirping).', completed: false },
+    { id: 2, text: 'Things you can smell', desc: 'Notice 2 scents in your environment (e.g., coffee smell, perfume, or just clean air).', completed: false },
+    { id: 1, text: 'One thing you can taste', desc: 'Notice the taste in your mouth or take a sip of water to feel one taste.', completed: false },
   ]);
 
   // Personal Emergency Contact state
   const [emergencyContact, setEmergencyContact] = useState({
-    name: 'חבר קרוב / בן משפחה',
+    name: 'Close Friend / Family Member',
     phone: '',
   });
   const [isEditingContact, setIsEditingContact] = useState(false);
@@ -114,15 +114,15 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
   };
 
   const getBreatheLabel = () => {
-    if (breathePhase === 'inhale') return 'שאף פנימה';
-    if (breathePhase === 'hold') return 'החזק';
-    return 'נשוף החוצה';
+    if (breathePhase === 'inhale') return 'Inhale';
+    if (breathePhase === 'hold') return 'Hold';
+    return 'Exhale';
   };
 
   const getBreatheSubText = () => {
-    if (breathePhase === 'inhale') return 'קח נשימה עמוקה ואיטית מהאף';
-    if (breathePhase === 'hold') return 'אפשר לגוף לשקוט';
-    return 'נשוף באיטיות תוך כיווץ השפתיים';
+    if (breathePhase === 'inhale') return 'Take a deep and slow breath through the nose';
+    if (breathePhase === 'hold') return 'Allow the body to settle';
+    return 'Exhale slowly through pursed lips';
   };
 
   return (
@@ -146,9 +146,9 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           <VolumeX size={28} />
         </div>
         <div style={{ flex: 1 }}>
-          <h2 style={{ fontSize: '1.2rem', color: 'var(--color-sos)', fontWeight: 700, fontFamily: 'var(--font-display)' }}>נוהל חירום SOS</h2>
+          <h2 style={{ fontSize: '1.2rem', color: 'var(--color-sos)', fontWeight: 700, fontFamily: 'var(--font-display)' }}>Emergency Protocol SOS</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-            רעשי הסביבה הושתקו לחלוטין. אנחנו כאן איתך, קח נשימה עמוקה.
+            Environmental noises have been completely muted. We are here with you, take a deep breath.
           </p>
         </div>
       </div>
@@ -167,7 +167,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           }}
           onClick={() => setSosTab('breathe')}
         >
-          נשימת 4-7-8
+          4-7-8 Breathing
         </button>
         <button 
           className={`tab-btn ${sosTab === 'grounding' ? 'active' : ''}`}
@@ -181,7 +181,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           }}
           onClick={() => setSosTab('grounding')}
         >
-          תרגיל קרקוע
+          Grounding Exercise
         </button>
         <button 
           className={`tab-btn ${sosTab === 'contacts' ? 'active' : ''}`}
@@ -195,7 +195,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           }}
           onClick={() => setSosTab('contacts')}
         >
-          קווי סיוע
+          Helplines
         </button>
       </div>
 
@@ -204,9 +204,9 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', width: '100%' }}>
           
           <div style={{ textAlign: 'center', marginTop: '10px' }}>
-            <h3 style={{ fontSize: '1.25rem', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>נשימה מרגיעה</h3>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Calming Breath</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', maxWidth: '300px', margin: '6px auto 0', lineHeight: '1.4' }}>
-              נשימה בקצב 4-7-8 מסייעת להאט את דופק הלב ולהפעיל את מנגנון הרגיעה הטבעי בגוף.
+              4-7-8 breathing helps slow your heart rate and activate your body's natural relaxation response.
             </p>
           </div>
 
@@ -227,16 +227,16 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           </div>
 
           <div className="glass-panel" style={{ width: '100%', fontSize: '0.85rem', padding: '20px', borderRadius: '24px' }}>
-            <h4 style={{ color: 'var(--color-primary)', marginBottom: '8px', fontWeight: '700', fontFamily: 'var(--font-display)' }}>שלבי התרגיל:</h4>
-            <ul style={{ paddingRight: '20px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px', lineHeight: '1.4' }}>
+            <h4 style={{ color: 'var(--color-primary)', marginBottom: '8px', fontWeight: '700', fontFamily: 'var(--font-display)' }}>Exercise Steps:</h4>
+            <ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px', lineHeight: '1.4' }}>
               <li style={{ fontWeight: breathePhase === 'inhale' ? '700' : '400', color: breathePhase === 'inhale' ? 'var(--color-primary)' : 'var(--text-secondary)' }}>
-                1. שאף אוויר דרך האף בצורה חרישית במשך 4 שניות.
+                1. Inhale air quietly through your nose for 4 seconds.
               </li>
               <li style={{ fontWeight: breathePhase === 'hold' ? '700' : '400', color: breathePhase === 'hold' ? 'var(--color-secondary)' : 'var(--text-secondary)' }}>
-                2. עצור את הנשימה והחזק את האוויר בריאות במשך 7 שניות.
+                2. Hold your breath and keep the air in your lungs for 7 seconds.
               </li>
               <li style={{ fontWeight: breathePhase === 'exhale' ? '700' : '400', color: breathePhase === 'exhale' ? 'var(--color-accent)' : 'var(--text-secondary)' }}>
-                3. נשוף את כל האוויר החוצה דרך הפה עם צליל ״פווו״ במשך 8 שניות.
+                3. Exhale completely through your mouth with a "whoosh" sound for 8 seconds.
               </li>
             </ul>
           </div>
@@ -246,9 +246,9 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
       {sosTab === 'grounding' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: '1.25rem', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>קרקוע 5-4-3-2-1</h3>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>5-4-3-2-1 Grounding</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px', lineHeight: '1.4' }}>
-              התמקדות בסביבה החיצונית באמצעות החושים מסייעת להחזיר את תשומת הלב לרגע ההווה ולהפחית הצפה רגשית.
+              Focusing on the external environment using your senses helps bring attention back to the present moment and reduce emotional overwhelm.
             </p>
           </div>
 
@@ -284,7 +284,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
             style={{ marginTop: '10px', borderRadius: '9999px', padding: '12px' }}
             onClick={() => setGroundingSteps(steps => steps.map(s => ({ ...s, completed: false })))}
           >
-            איפוס תרגיל קרקוע
+            Reset Grounding Exercise
           </button>
         </div>
       )}
@@ -292,20 +292,20 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
       {sosTab === 'contacts' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <h3 style={{ fontSize: '1.25rem', textAlign: 'center', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>סיוע ותמיכה נפשית</h3>
+            <h3 style={{ fontSize: '1.25rem', textAlign: 'center', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Mental Support & Helplines</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textAlign: 'center', marginTop: '4px', lineHeight: '1.4' }}>
-              זכור שאתה לא לבד. אם אתה מרגיש צורך לדבר עם מישהו, אנשי מקצוע ומתנדבים זמינים עבורך כעת.
+              Remember that you are not alone. If you feel the need to talk to someone, professionals and volunteers are available for you now.
             </p>
           </div>
 
           {/* Hotline Buttons */}
           <div className="emergency-contacts">
-            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600', paddingRight: '4px' }}>קווי סיוע בישראל (שיחה אנונימית חינם)</h4>
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600', paddingLeft: '4px' }}>Support Lines (Anonymous & Free)</h4>
             
             <a href="tel:1201" className="contact-btn" style={{ borderRadius: '20px' }}>
               <div className="contact-btn-left">
                 <Phone size={18} />
-                <span>ער״ן - עזרה ראשונה נפשית</span>
+                <span>ERAN - Emotional First Aid</span>
               </div>
               <span className="contact-btn-number" style={{ fontFamily: 'var(--font-display)' }}>1201</span>
             </a>
@@ -313,7 +313,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
             <a href="tel:1800363363" className="contact-btn" style={{ borderRadius: '20px' }}>
               <div className="contact-btn-left">
                 <Phone size={18} />
-                <span>נט״ל - סיוע לנפגעי טראומה</span>
+                <span>NATAL - Trauma Helpline</span>
               </div>
               <span className="contact-btn-number" style={{ fontFamily: 'var(--font-display)' }}>1-800-363-363</span>
             </a>
@@ -323,7 +323,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           <div className="glass-panel" style={{ padding: '24px 20px', borderRadius: '32px' }}>
             <h4 style={{ fontSize: '0.95rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>
               <Heart size={16} style={{ color: 'var(--color-sos)' }} />
-              איש קשר אישי לחירום
+              Personal Emergency Contact
             </h4>
 
             {isEditingContact ? (
@@ -331,7 +331,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
                 saveEmergencyContact(
-                  formData.get('name') as string || 'איש קשר לחירום',
+                  formData.get('name') as string || 'Emergency Contact',
                   formData.get('phone') as string || ''
                 );
               }}
@@ -340,24 +340,24 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
                 <input
                   type="text"
                   name="name"
-                  placeholder="שם איש הקשר"
+                  placeholder="Contact Name"
                   defaultValue={emergencyContact.name}
                   className="btn btn-secondary"
-                  style={{ textAlign: 'right', cursor: 'text', backgroundColor: 'rgba(255, 255, 255, 0.6)', borderColor: 'rgba(65, 101, 98, 0.12)' }}
+                  style={{ textAlign: 'left', cursor: 'text', backgroundColor: 'rgba(255, 255, 255, 0.6)', borderColor: 'rgba(65, 101, 98, 0.12)' }}
                   required
                 />
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="מספר טלפון"
+                  placeholder="Phone Number"
                   defaultValue={emergencyContact.phone}
                   className="btn btn-secondary hebrew-direction-override"
                   style={{ textAlign: 'left', cursor: 'text', backgroundColor: 'rgba(255, 255, 255, 0.6)', borderColor: 'rgba(65, 101, 98, 0.12)' }}
                   required
                 />
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button type="submit" className="btn btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '9999px' }}>שמור</button>
-                  <button type="button" className="btn btn-secondary" style={{ flex: 1, padding: '12px', borderRadius: '9999px' }} onClick={() => setIsEditingContact(false)}>ביטול</button>
+                  <button type="submit" className="btn btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '9999px' }}>Save</button>
+                  <button type="button" className="btn btn-secondary" style={{ flex: 1, padding: '12px', borderRadius: '9999px' }} onClick={() => setIsEditingContact(false)}>Cancel</button>
                 </div>
               </form>
             ) : (
@@ -365,8 +365,8 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontWeight: '600', fontSize: '1rem' }}>{emergencyContact.name}</div>
-                    <div className="hebrew-direction-override" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'right', fontFamily: 'var(--font-display)' }}>
-                      {emergencyContact.phone || 'לא הוגדר מספר'}
+                    <div className="hebrew-direction-override" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'left', fontFamily: 'var(--font-display)' }}>
+                      {emergencyContact.phone || 'No number defined'}
                     </div>
                   </div>
                   <button 
@@ -374,14 +374,14 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
                     style={{ backgroundColor: 'rgba(65, 101, 98, 0.08)', borderRadius: '9999px', padding: '6px 16px' }} 
                     onClick={() => setIsEditingContact(true)}
                   >
-                    ערוך
+                    Edit
                   </button>
                 </div>
                 
                 {emergencyContact.phone && (
                   <a href={`tel:${emergencyContact.phone}`} className="btn btn-primary" style={{ borderRadius: '9999px', boxShadow: 'none' }}>
                     <Phone size={18} />
-                    חייג אל {emergencyContact.name}
+                    Call {emergencyContact.name}
                   </a>
                 )}
               </div>
@@ -406,7 +406,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           onClick={onCloseSOS}
         >
           <ShieldCheck size={20} />
-          אני מרגיש יותר טוב - חזור לסשן
+          I feel better - Return to session
         </button>
 
         <button 
@@ -415,7 +415,7 @@ export const EmergencyProtocol: React.FC<EmergencyProtocolProps> = ({
           onClick={onExitSession}
         >
           <ArrowLeft size={16} />
-          סיים סשן וחזור לדאשבורד
+          Finish session and return to dashboard
         </button>
       </div>
 

@@ -35,7 +35,6 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   const [finalSuds, setFinalSuds] = useState(initialSuds);
   
   const timerRef = useRef<number | null>(null);
-  const breathTimerRef = useRef<number | null>(null);
   
   const onTickRef = useRef(onTick);
   const onPauseToggleRef = useRef(onPauseToggle);
@@ -103,10 +102,10 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
   const getEnvName = (type: ExposureType) => {
     switch (type) {
-      case 'cafe': return 'בית קפה';
-      case 'street': return 'רחוב סואן';
-      case 'beach': return 'חוף הים';
-      case 'forest': return 'יער שקט';
+      case 'cafe': return 'Cafe';
+      case 'street': return 'Busy Street';
+      case 'beach': return 'Sea Beach';
+      case 'forest': return 'Quiet Forest';
     }
   };
 
@@ -121,11 +120,11 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   };
 
   const getSudsDescription = (val: number): string => {
-    if (val <= 2) return 'רגוע ונינוח';
-    if (val <= 4) return 'מתח קל או אי נוחות קלה';
-    if (val <= 6) return 'מתח בינוני, מורגש אך נשלט';
-    if (val <= 8) return 'מתח גבוה, דחף חזק להימנעות';
-    return 'מתח קיצוני, קושי בריכוז / פאניקה';
+    if (val <= 2) return 'Calm and relaxed';
+    if (val <= 4) return 'Mild tension or slight discomfort';
+    if (val <= 6) return 'Moderate tension, noticeable but controlled';
+    if (val <= 8) return 'High tension, strong urge to avoid';
+    return 'Extreme tension, difficulty concentrating / panic';
   };
 
   // Breathing circle style
@@ -143,10 +142,10 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   };
 
   const phasesList: { id: SessionPhase; num: number; label: string }[] = [
-    { id: 'opening', num: 1, label: 'הכנה' },
-    { id: 'briefing', num: 2, label: 'הדרכה' },
-    { id: 'exposure', num: 3, label: 'חשיפה' },
-    { id: 'closing', num: 4, label: 'סיכום' },
+    { id: 'opening', num: 1, label: 'Preparation' },
+    { id: 'briefing', num: 2, label: 'Guidance' },
+    { id: 'exposure', num: 3, label: 'Exposure' },
+    { id: 'closing', num: 4, label: 'Summary' },
   ];
 
   if (isFinishing) {
@@ -157,15 +156,15 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
             <CheckCircle size={56} />
           </div>
           
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>סיימת את הסשן בהצלחה!</h2>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Session Completed Successfully!</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: '1.5' }}>
-            הקדשת {durationCompleted} דקות של חשיפה מבוקרת לטובת הבריאות והוויסות העצמי שלך.
+            You have completed {durationCompleted} minutes of controlled exposure for your health and self-regulation.
           </p>
 
           <div style={{ borderTop: '1px solid rgba(65, 101, 98, 0.08)', paddingTop: '20px', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '4px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>מדד מתח סופי (SUDs)</h3>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '4px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Final Stress Level (SUDs)</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>
-              דרג את רמת המתח או החרדה שאתה מרגיש כעת:
+              Rate the level of stress or anxiety you are currently feeling:
             </p>
             
             <div className="suds-slider-container">
@@ -182,8 +181,8 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
                 }}
               />
               <div className="suds-labels" style={{ fontWeight: '500' }}>
-                <span>0 - רגוע לחלוטין</span>
-                <span>10 - פאניקה מוחלטת</span>
+                <span>0 - Completely Calm</span>
+                <span>10 - Total Panic</span>
               </div>
               <div className="suds-desc" style={{ fontWeight: '500', color: 'var(--color-primary)', marginTop: '8px' }}>{getSudsDescription(finalSuds)}</div>
             </div>
@@ -191,10 +190,10 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button className="btn btn-primary" style={{ padding: '16px', borderRadius: '9999px', fontWeight: '600' }} onClick={handleSave}>
-              שמור נתוני סשן וסיים
+              Save Session & Finish
             </button>
             <button className="btn btn-secondary" style={{ padding: '16px', borderRadius: '9999px', fontWeight: '600' }} onClick={onCancelSession}>
-              חזור ללא שמירה
+              Return Without Saving
             </button>
           </div>
         </div>
@@ -243,7 +242,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         >
           <div>
             <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.05em' }}>
-              סביבת חשיפה פעילה
+              Active Exposure Environment
             </span>
             <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'var(--font-display)' }}>
               {getEnvName(settings.exposureType)}
@@ -300,7 +299,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
                   fontFamily: 'var(--font-display)'
                 }}
               >
-                שלב {phase.num}: {phase.label}
+                Phase {phase.num}: {phase.label}
               </span>
             </div>
           );
@@ -360,10 +359,10 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         <div className="breathing-circle-inner" style={breathingCircleStyle}>
           <div className="breathing-timer" style={{ fontFamily: 'var(--font-display)' }}>{formatTime(timeLeft)}</div>
           <div className="breathing-text" style={{ fontFamily: 'var(--font-display)', fontWeight: '600' }}>
-            {breathState === 'in' ? 'שאף...' : 'נשוף...'}
+            {breathState === 'in' ? 'Inhale...' : 'Exhale...'}
           </div>
           <div style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '2px' }}>
-            {breathCounter} ש׳
+            {breathCounter}s
           </div>
         </div>
       </div>
@@ -373,11 +372,11 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         {isActive ? (
           <p className="pulse-animation" style={{ fontWeight: '500' }}>
             {breathState === 'in' 
-              ? 'תן לריאות להתמלא באוויר מרגיע...' 
-              : 'שחרר את המתח החוצה יחד עם האוויר...'}
+              ? 'Let your lungs fill with soothing air...' 
+              : 'Release the tension along with your breath...'}
           </p>
         ) : (
-          <p style={{ color: 'var(--color-sos)', fontWeight: '600' }}>הסשן מושהה. קח נשימה עמוקה והמשך מתי שתרגיש מוכן.</p>
+          <p style={{ color: 'var(--color-sos)', fontWeight: '600' }}>Session paused. Take a deep breath and resume when you feel ready.</p>
         )}
       </div>
 
@@ -385,22 +384,22 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
       <div className="glass-panel" style={{ padding: '16px', textAlign: 'center', borderRadius: '24px', fontSize: '0.9rem', lineHeight: '1.5' }}>
         {sessionPhase === 'opening' && (
           <p style={{ margin: 0, color: 'var(--color-primary)' }}>
-            <strong>הכנה והתאקלמות:</strong> התמקם בנוחות, האזן להנחיות הפתיחה והתחל לווסת את הנשימה.
+            <strong>Preparation & Acclimation:</strong> Settle in comfortably, listen to the opening guidance, and begin regulating your breath.
           </p>
         )}
         {sessionPhase === 'briefing' && (
           <p style={{ margin: 0, color: 'var(--color-secondary)' }}>
-            <strong>שלב הדרכה:</strong> רעש הרקע עולה כעת בצורה מבוקרת ועמומה. שמור על קצב נשימה רגוע.
+            <strong>Guidance Phase:</strong> Background noise rises in a controlled and muffled manner. Keep a calm breathing rhythm.
           </p>
         )}
         {sessionPhase === 'exposure' && (
           <p style={{ margin: 0, color: 'var(--color-sos)' }}>
-            <strong>חשיפה פעילה:</strong> רעשי הסביבה עלו לעוצמה מורגשת. התמודד בבטחה בעזרת עוגן הנשימה.
+            <strong>Active Exposure:</strong> Environmental noises have risen to a noticeable volume. Cope safely using your breath anchor.
           </p>
         )}
         {sessionPhase === 'closing' && (
           <p style={{ margin: 0, color: 'var(--color-primary)', fontWeight: '600' }}>
-            <strong>סיכום והרפיה:</strong> רעשי הרקע דועכים לקראת סיום. האזן לסיכום והרגע את הגוף.
+            <strong>Summary & Relaxation:</strong> Background noises fade towards the end. Listen to the summary and relax your body.
           </p>
         )}
       </div>
@@ -420,23 +419,23 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         onClick={onTriggerSOS}
       >
         <ShieldAlert size={22} />
-        לחצן חירום SOS
+        Emergency Protocol SOS
       </button>
 
       {/* Live Audio Adjustments */}
       <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderRadius: '32px' }}>
         <h3 style={{ fontSize: '1.05rem', borderBottom: '1px solid rgba(65, 101, 98, 0.08)', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>
           <Volume2 size={18} />
-          שליטה בזמן אמת בחשיפה
+          Real-time Exposure Control
         </h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '-12px', lineHeight: '1.4' }}>
-          אם רעש הסביבה חזק או מציף מדי, השתמש במכוונים כדי להחליש או לעמעם אותו במקום להפסיק.
+          If the environment noise is too loud or overwhelming, use the sliders to lower or muffle it instead of stopping.
         </p>
 
         {/* Live Noise Volume */}
         <div className="control-group">
           <div className="control-header">
-            <span>עוצמת רעש סביבה</span>
+            <span>Environment Noise Volume</span>
             <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.noiseVolume * 100)}%</span>
           </div>
           <input
@@ -453,7 +452,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         {/* Live Muffle Filter */}
         <div className="control-group">
           <div className="control-header">
-            <span>עמעום רעש (Muffle)</span>
+            <span>Noise Muffle</span>
             <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.muffleLevel * 100)}%</span>
           </div>
           <input
@@ -466,15 +465,15 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
             disabled={!isActive}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-            <span>צלול וישיר</span>
-            <span style={{ marginRight: 'auto' }}>עמום ומרוחק</span>
+            <span>Clear & Direct</span>
+            <span style={{ marginLeft: 'auto' }}>Muffled & Distant</span>
           </div>
         </div>
 
         {/* Live Music Volume */}
         <div className="control-group">
           <div className="control-header">
-            <span>עוצמת מוזיקה מרגיעה</span>
+            <span>Soothing Music Volume</span>
             <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.musicVolume * 100)}%</span>
           </div>
           <input

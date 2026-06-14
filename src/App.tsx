@@ -19,7 +19,7 @@ function App() {
     spikeFrequency: 0.3,
     spikeCount: 4,
     exposureType: 'cafe',
-    voiceoverLanguage: 'he',
+    voiceoverLanguage: 'en',
     noiseVariantIndex: -1,
   });
   
@@ -48,7 +48,7 @@ function App() {
       try {
         const parsed = JSON.parse(savedSettings);
         // Ensure default properties are present
-        if (!parsed.voiceoverLanguage) parsed.voiceoverLanguage = 'he';
+        if (!parsed.voiceoverLanguage) parsed.voiceoverLanguage = 'en';
         if (parsed.spikeCount === undefined) parsed.spikeCount = 4;
         if (parsed.noiseVariantIndex === undefined) parsed.noiseVariantIndex = -1;
         setSettings(parsed);
@@ -199,13 +199,13 @@ function App() {
               className={`tab-btn ${view === 'setup' ? 'active' : ''}`}
               onClick={() => setView('setup')}
             >
-              תרגול חשיפה
+              Exposure Therapy
             </button>
             <button 
               className={`tab-btn ${view === 'history' ? 'active' : ''}`}
               onClick={() => setView('history')}
             >
-              היסטוריה
+              History
             </button>
           </nav>
         </header>
@@ -233,10 +233,10 @@ function App() {
               <Headphones size={56} />
             </div>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', color: 'var(--text-primary)' }}>
-              מכין את מרחב הטיפול...
+              Preparing therapy space...
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              טוען ומסנכרן את קבצי הסאונד וההנחיה הקולית באיכות גבוהה.
+              Loading and synchronizing high-quality sound files and voice guidance.
             </p>
             <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
               <div 

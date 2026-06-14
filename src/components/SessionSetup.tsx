@@ -27,60 +27,60 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
   const environments: { type: ExposureType; label: string; icon: React.ReactNode; desc: string }[] = [
     {
       type: 'cafe',
-      label: 'בית קפה',
+      label: 'Cafe',
       icon: <Coffee size={24} />,
-      desc: 'דיבורים עמומים ושקשוק כוסות',
+      desc: 'Muffled chatter and clinking cups',
     },
     {
       type: 'street',
-      label: 'רחוב סואן',
+      label: 'Busy Street',
       icon: <Car size={24} />,
-      desc: 'תנועת מכוניות ושאון עירוני',
+      desc: 'Car traffic and city bustle',
     },
     {
       type: 'beach',
-      label: 'חוף הים',
+      label: 'Sea Beach',
       icon: <Waves size={24} />,
-      desc: 'קולות גלים מרגיעים ורוח ים',
+      desc: 'Soothing wave sounds and ocean breeze',
     },
     {
       type: 'forest',
-      label: 'יער שקט',
+      label: 'Quiet Forest',
       icon: <Trees size={24} />,
-      desc: 'רשרוש עלים, ציוץ ציפורים ורוח',
+      desc: 'Rustling leaves, chirping birds, and wind',
     },
   ];
 
   const getSudsDescription = (val: number): string => {
-    if (val <= 2) return 'רגוע ונינוח';
-    if (val <= 4) return 'מתח קל או אי נוחות קלה';
-    if (val <= 6) return 'מתח בינוני, מורגש אך נשלט';
-    if (val <= 8) return 'מתח גבוה, דחף חזק להימנעות';
-    return 'מתח קיצוני, קושי בריכוז / פאניקה';
+    if (val <= 2) return 'Calm and relaxed';
+    if (val <= 4) return 'Mild tension or slight discomfort';
+    if (val <= 6) return 'Moderate tension, noticeable but controlled';
+    if (val <= 8) return 'High tension, strong urge to avoid';
+    return 'Extreme tension, difficulty concentrating / panic';
   };
 
   const getSpikeLabel = (val: number): string => {
-    if (val === 0) return 'ללא רעשים פתאומיים (רקע בלבד)';
-    if (val === 1) return 'רעש פתאומי אחד במהלך החשיפה';
-    if (val < 5) return `תדירות נמוכה (${val} רעשים פתאומיים)`;
-    if (val < 10) return `תדירות בינונית (${val} רעשים פתאומיים)`;
-    return `תדירות גבוהה (${val} רעשים פתאומיים)`;
+    if (val === 0) return 'No sudden noises (background only)';
+    if (val === 1) return '1 sudden noise during exposure';
+    if (val < 5) return `Low frequency (${val} sudden noises)`;
+    if (val < 10) return `Medium frequency (${val} sudden noises)`;
+    return `High frequency (${val} sudden noises)`;
   };
 
   return (
     <div className="view-container" style={{ position: 'relative', zIndex: 10 }}>
       {/* Introduction Card */}
       <div className="glass-panel" style={{ textAlign: 'center', padding: '24px 20px', borderRadius: '32px' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>הגדרת סשן</h2>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Session Setup</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-          התאם את הסביבה שלך לרוגע מקסימלי. תרגול יומי מסייע להרגיל את המוח בצורה הדרגתית ובטוחה.
+          Customize your environment for maximum calm. Daily practice helps adapt the brain in a gradual and safe manner.
         </p>
       </div>
 
       {/* Environment Selector */}
       <div className="control-group">
-        <h3 style={{ fontSize: '1.1rem', marginBottom: '12px', paddingRight: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)', fontWeight: '600' }}>
-          סביבת חשיפה
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '12px', paddingLeft: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)', fontWeight: '600' }}>
+          Exposure Environment
         </h3>
         <div className="env-grid">
           {environments.map((env, index) => {
@@ -118,7 +118,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
       {/* Noise Variant Selector */}
       <div className="control-group" style={{ padding: '0 4px' }}>
         <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>
-          וריאנט רעש רקע
+          Background Noise Variant
         </h4>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
@@ -140,7 +140,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             onClick={() => onSettingsChange({ noiseVariantIndex: -1 })}
           >
             <Shuffle size={13} />
-            אקראי
+            Random
           </button>
           {Array.from({ length: NOISE_VARIANT_COUNT }, (_, i) => (
             <button
@@ -164,21 +164,21 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
         </div>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px', display: 'block' }}>
           {settings.noiseVariantIndex === -1
-            ? 'וריאנט רעש שונה ייבחר בכל סשן'
-            : `וריאנט ${settings.noiseVariantIndex + 1} נבחר`}
+            ? 'A different noise variant will be selected for each session'
+            : `Variant ${settings.noiseVariantIndex + 1} selected`}
         </span>
       </div>
 
       {/* Advanced Audio Controls */}
       <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', borderRadius: '32px' }}>
         <h3 style={{ fontSize: '1.15rem', color: 'var(--color-primary)', borderBottom: '1px solid rgba(65, 101, 98, 0.08)', paddingBottom: '12px', fontFamily: 'var(--font-display)' }}>
-          שמע
+          Audio Controls
         </h3>
 
         {/* Music Volume */}
         <div className="control-group">
           <div className="control-header">
-            <span>מוזיקת הרגעה</span>
+            <span>Soothing Music</span>
             <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.musicVolume * 100)}%</span>
           </div>
           <input
@@ -194,7 +194,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
         {/* Noise Volume */}
         <div className="control-group">
           <div className="control-header">
-            <span>רעש רקע</span>
+            <span>Background Noise</span>
             <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.noiseVolume * 100)}%</span>
           </div>
           <input
@@ -210,7 +210,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
         {/* Muffle Level */}
         <div className="control-group">
           <div className="control-header">
-            <span>רמת עמעום רעשים</span>
+            <span>Noise Muffle Level</span>
             <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.muffleLevel * 100)}%</span>
           </div>
           <input
@@ -222,14 +222,14 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             onChange={(e) => onSettingsChange({ muffleLevel: parseFloat(e.target.value) })}
           />
           <span className="control-desc">
-            עמעום גבוה מנחית את התדרים הגבוהים ומעניק תחושת סינון רעשים וריחוק.
+            High muffle attenuates high frequencies, providing a feeling of noise cancellation and distance.
           </span>
         </div>
 
         {/* Spike Triggers Count */}
         <div className="control-group">
           <div className="control-header">
-            <span>כמות רעשים פתאומיים בסשן</span>
+            <span>Sudden Noises per Session</span>
             <span className="control-value" style={{ fontWeight: '600' }}>{settings.spikeCount}</span>
           </div>
           <input
@@ -241,16 +241,16 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             onChange={(e) => onSettingsChange({ spikeCount: parseInt(e.target.value) })}
           />
           <span className="control-desc" style={{ color: 'var(--color-secondary)', fontWeight: '500' }}>
-            מצב: {getSpikeLabel(settings.spikeCount)}
+            Status: {getSpikeLabel(settings.spikeCount)}
           </span>
         </div>
       </div>
 
       {/* Language Selector */}
       <div className="glass-panel" style={{ padding: '24px 20px', borderRadius: '32px' }}>
-        <h3 style={{ fontSize: '1.1rem', marginBottom: '6px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>שפת הנחיה</h3>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '6px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Guidance Language</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '14px' }}>
-          בחר את שפת הליווי הקולי במהלך שלבי המדיטציה והחשיפה:
+          Select the voiceover language during the meditation and exposure phases:
         </p>
         <div style={{ display: 'flex', gap: '4px', background: 'rgba(65, 101, 98, 0.06)', padding: '4px', borderRadius: '9999px' }}>
           <button
@@ -263,7 +263,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             }}
             onClick={() => onSettingsChange({ voiceoverLanguage: 'he' })}
           >
-            עברית
+            Hebrew
           </button>
           <button
             className={`pill-btn ${settings.voiceoverLanguage === 'en' ? 'active' : ''}`}
@@ -282,7 +282,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
 
       {/* Duration Selector */}
       <div className="glass-panel" style={{ padding: '24px 20px', borderRadius: '32px' }}>
-        <h3 style={{ fontSize: '1.1rem', marginBottom: '14px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>משך הסשן (דקות)</h3>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '14px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Session Duration (Minutes)</h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           {[3, 5, 10, 15].map((mins) => {
             const isSelected = duration === mins;
@@ -312,9 +312,9 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
 
       {/* SUDs Stress rating */}
       <div className="glass-panel" style={{ padding: '24px 20px', borderRadius: '32px' }}>
-        <h3 style={{ fontSize: '1.1rem', marginBottom: '4px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>מצב נוכחי (מתח/חרדה)</h3>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '4px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Current State (Stress/Anxiety)</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '14px' }}>
-          דרג את רמת המתח או החרדה שאתה חווה כעת:
+          Rate the level of stress or anxiety you are currently experiencing:
         </p>
         <div className="suds-slider-container">
           <div className="suds-indicator" style={{ fontFamily: 'var(--font-display)' }}>{initialSuds}</div>
@@ -330,8 +330,8 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             }}
           />
           <div className="suds-labels" style={{ fontWeight: '500' }}>
-            <span>רגוע (0)</span>
-            <span>פאניקה (10)</span>
+            <span>Calm (0)</span>
+            <span>Panic (10)</span>
           </div>
           <div className="suds-desc" style={{ fontWeight: '500', color: 'var(--color-primary)', marginTop: '8px' }}>{getSudsDescription(initialSuds)}</div>
         </div>
@@ -349,7 +349,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
         }} 
         onClick={onStartSession}
       >
-        התחלת סשן
+        Start Session
       </button>
 
       {/* Emergency Button */}
@@ -368,7 +368,7 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
         onClick={onTriggerSOS}
       >
         <ShieldAlert size={22} />
-        נוהל חירום SOS
+        Emergency Protocol SOS
       </button>
       
       {/* Footer Nav spacer */}
