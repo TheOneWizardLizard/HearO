@@ -6,30 +6,29 @@ interface ActiveSessionProps {
   settings: AudioEngineSettings;
   duration: number; // in minutes
   initialSuds: number;
-  sessionPhase: SessionPhase;
   onSettingsChange: (newSettings: Partial<AudioEngineSettings>) => void;
   onPauseToggle: (isPaused: boolean) => void;
   onTick: (timeLeftSeconds: number) => void;
   onTriggerSOS: () => void;
   onSaveSession: (finalSuds: number, durationCompleted: number) => void;
   onCancelSession: () => void;
+  sessionPhase: SessionPhase;
 }
 
 export const ActiveSession: React.FC<ActiveSessionProps> = ({
   settings,
   duration,
   initialSuds,
-  sessionPhase,
   onSettingsChange,
   onPauseToggle,
   onTick,
   onTriggerSOS,
   onSaveSession,
   onCancelSession,
+  sessionPhase,
 }) => {
   const [timeLeft, setTimeLeft] = useState(duration * 60); // in seconds
   const [isActive, setIsActive] = useState(true);
-  // Single ticker 0-11 drives the 4-4-4 cycle deterministically
   const [breathTick, setBreathTick] = useState(0);
   const breathPhase = breathTick < 4 ? 'inhale' : breathTick < 8 ? 'hold' : 'exhale';
   const breathTimeLeft = breathTick < 4 ? 4 - breathTick : breathTick < 8 ? 8 - breathTick : 12 - breathTick;
@@ -37,7 +36,6 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   const [finalSuds, setFinalSuds] = useState(initialSuds);
   
   const timerRef = useRef<number | null>(null);
-  
   const onTickRef = useRef(onTick);
   const onPauseToggleRef = useRef(onPauseToggle);
 
@@ -46,14 +44,11 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
     onPauseToggleRef.current = onPauseToggle;
   }, [onTick, onPauseToggle]);
 
-  // Total duration completed tracker (for history log)
   const durationCompleted = Math.round(((duration * 60) - timeLeft) / 60 * 10) / 10;
 
-  // Main timer effect: manages both session countdown and breathing guide on a single interval
   useEffect(() => {
     if (isActive) {
       timerRef.current = window.setInterval(() => {
-        // 1. Session countdown
         setTimeLeft((prev) => {
           if (prev <= 1) {
             handleSessionFinished();
@@ -64,7 +59,6 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           return next;
         });
 
-        // 2. Breathing guide (4-4-4 box breathing)
         setBreathTick((prev) => (prev + 1) % 12);
       }, 1000);
     }
@@ -77,12 +71,12 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   const handleToggleActive = () => {
     const nextActive = !isActive;
     setIsActive(nextActive);
-    onPauseToggleRef.current(!nextActive); // passed paused = !active
+    onPauseToggleRef.current(!nextActive);
   };
 
   const handleSessionFinished = () => {
     setIsActive(false);
-    onPauseToggleRef.current(true); // Pause engine when finishing
+    onPauseToggleRef.current(true);
     setIsFinishing(true);
   };
 
@@ -124,38 +118,31 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   };
 
   const getBreathStyles = () => {
-    const transition = 'transform 1s ease-in-out, background-color 1s ease, box-shadow 1s ease, border-color 0.5s ease';
+    const transition = 'transform 1s linear, background-color 1s ease, border-color 0.5s ease';
+    let scale = 1.0;
+    let backgroundColor = 'transparent';
+    let borderColor = 'var(--color-border)';
+
     if (breathPhase === 'inhale') {
-      // breathTimeLeft goes 4→3→2→1, dividing by 3 ensures we reach exactly 1.4 at step=1
-      const scale = 0.7 + ((4 - breathTimeLeft) / 3) * 0.7;
-      return {
-        transform: `scale(${scale})`,
-        backgroundColor: 'rgba(65, 101, 98, 0.08)',
-        boxShadow: '0 0 30px rgba(65, 101, 98, 0.2)',
-        borderColor: '#416562',
-        transition,
-      };
+      scale = 0.8 + ((4 - breathTimeLeft) / 3) * 0.5;
+      backgroundColor = 'var(--color-accent-soft)';
+      borderColor = 'var(--color-accent)';
     } else if (breathPhase === 'hold') {
-      // subtle bubble pulse: alternate ±0.03 each second
-      const scale = breathTimeLeft % 2 === 0 ? 1.43 : 1.40;
-      return {
-        transform: `scale(${scale})`,
-        backgroundColor: 'rgba(114, 90, 65, 0.08)',
-        boxShadow: '0 0 40px rgba(114, 90, 65, 0.2)',
-        borderColor: '#725a41',
-        transition,
-      };
+      scale = 1.3;
+      backgroundColor = 'rgba(45, 45, 45, 0.05)';
+      borderColor = 'var(--color-border)';
     } else {
-      // exhale: exact reverse of inhale, 1.4→0.7
-      const scale = 1.4 - ((4 - breathTimeLeft) / 3) * 0.7;
-      return {
-        transform: `scale(${scale})`,
-        backgroundColor: 'rgba(69, 98, 117, 0.08)',
-        boxShadow: '0 0 25px rgba(69, 98, 117, 0.15)',
-        borderColor: '#456275',
-        transition,
-      };
+      scale = 1.3 - ((4 - breathTimeLeft) / 3) * 0.5;
+      backgroundColor = 'rgba(200, 121, 65, 0.03)';
+      borderColor = 'var(--color-border-subtle)';
     }
+
+    return {
+      transform: `scale(${scale})`,
+      backgroundColor,
+      borderColor,
+      transition,
+    };
   };
 
   const getBreathLabel = () => {
@@ -180,24 +167,28 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   if (isFinishing) {
     return (
       <div className="view-container" style={{ justifyContent: 'center', position: 'relative', zIndex: 10 }}>
-        <div className="glass-panel" style={{ textAlign: 'center', padding: '32px 24px', borderRadius: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', color: 'var(--color-primary)' }}>
+        <div style={{ textAlign: 'center', padding: '32px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24, color: 'var(--color-accent)' }}>
             <CheckCircle size={56} />
           </div>
           
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>Session Completed Successfully!</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: '1.5' }}>
-            You have completed {durationCompleted} minutes of controlled exposure for your health and self-regulation.
+          <h2 style={{ fontSize: '1.75rem', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginBottom: 8 }}>
+            Session Completed!
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 32, lineHeight: '1.5' }}>
+            You completed {durationCompleted} minutes of controlled exposure. Well done.
           </p>
 
-          <div style={{ borderTop: '1px solid rgba(65, 101, 98, 0.08)', paddingTop: '20px', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '4px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Final Stress Level (SUDs)</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>
-              Rate the level of stress or anxiety you are currently feeling:
+          <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: 24, marginBottom: 32 }}>
+            <div className="section-label" style={{ marginBottom: 8 }}>Final Stress Level (SUDs)</div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: 16 }}>
+              Rate your current level of stress or anxiety:
             </p>
             
             <div className="suds-slider-container">
-              <div className="suds-indicator" style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>{finalSuds}</div>
+              <div style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)', marginBottom: 8 }}>
+                {finalSuds}
+              </div>
               <input
                 type="range"
                 min="0"
@@ -206,23 +197,25 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
                 value={finalSuds}
                 onChange={(e) => setFinalSuds(parseInt(e.target.value))}
                 style={{
-                  background: 'linear-gradient(90deg, #416562 0%, #725a41 50%, #ba1a1a 100%)',
+                  background: 'linear-gradient(90deg, #b4c7b5 0%, #dcd3c5 50%, #dca5a5 100%)',
                 }}
               />
-              <div className="suds-labels" style={{ fontWeight: '500' }}>
-                <span>0 - Completely Calm</span>
-                <span>10 - Total Panic</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+                <span>Calm (0)</span>
+                <span>Panic (10)</span>
               </div>
-              <div className="suds-desc" style={{ fontWeight: '500', color: 'var(--color-primary)', marginTop: '8px' }}>{getSudsDescription(finalSuds)}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 8, fontWeight: '500' }}>
+                {getSudsDescription(finalSuds)}
+              </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <button className="btn btn-primary" style={{ padding: '16px', borderRadius: '9999px', fontWeight: '600' }} onClick={handleSave}>
-              Save Session & Finish
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button className="btn-filled" onClick={handleSave}>
+              Save & Finish
             </button>
-            <button className="btn btn-secondary" style={{ padding: '16px', borderRadius: '9999px', fontWeight: '600' }} onClick={onCancelSession}>
-              Return Without Saving
+            <button className="btn-outline" onClick={onCancelSession}>
+              Cancel Without Saving
             </button>
           </div>
         </div>
@@ -231,17 +224,17 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
   }
 
   return (
-    <div className="view-container" style={{ position: 'relative', zIndex: 10, gap: '12px' }}>
-      {/* Environment Background Card Header */}
+    <div className="view-container" style={{ position: 'relative', zIndex: 10, gap: '16px' }}>
+      {/* Environment Header */}
       <div
         style={{
           position: 'relative',
           width: '100%',
-          height: '100px',
-          borderRadius: '20px',
+          height: '120px',
+          borderRadius: 'var(--border-radius-md)',
           overflow: 'hidden',
-          boxShadow: 'var(--shadow-md)',
-          border: '1px solid rgba(255, 255, 255, 0.4)'
+          border: '1.5px solid var(--color-border)',
+          marginTop: 8,
         }}
       >
         <img 
@@ -251,28 +244,23 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            filter: 'brightness(0.8) contrast(1.05) saturate(0.9)',
+            filter: 'brightness(0.9) contrast(1.02) sepia(0.2)',
           }}
         />
         <div 
           style={{
             position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            top: 0,
-            padding: '20px 16px',
-            background: 'linear-gradient(to top, rgba(253, 249, 246, 0.95) 0%, rgba(253, 249, 246, 0.3) 60%, transparent 100%)',
+            inset: 0,
+            padding: '20px 24px',
+            background: 'linear-gradient(to top, rgba(242, 236, 228, 0.95) 0%, rgba(242, 236, 228, 0.2) 70%, transparent 100%)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-end',
           }}
         >
           <div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.05em' }}>
-              Active Exposure Environment
-            </span>
-            <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+            <div className="section-label">Active Environment</div>
+            <h2 style={{ fontSize: '1.5rem', margin: 0, color: 'var(--text-primary)', fontWeight: 400, fontFamily: 'var(--font-display)', marginTop: 4 }}>
               {getEnvName(settings.exposureType)}
             </h2>
           </div>
@@ -285,12 +273,11 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          backgroundColor: 'rgba(255, 255, 255, 0.45)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          padding: '12px 10px',
-          borderRadius: '20px',
-          boxShadow: 'var(--shadow-sm)',
+          border: '1.5px solid var(--color-border)',
+          padding: '16px 20px',
+          borderRadius: 'var(--border-radius-md)',
+          background: 'transparent',
+          marginTop: 4,
         }}
       >
         {phasesList.map((phase) => {
@@ -310,24 +297,22 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
               <div 
                 style={{
                   width: '100%',
-                  height: '6px',
+                  height: '4px',
                   borderRadius: '9999px',
-                  backgroundColor: isActivePhase ? 'var(--color-primary)' : 'rgba(65, 101, 98, 0.12)',
-                  boxShadow: isActivePhase ? '0 0 10px rgba(65, 101, 98, 0.4)' : 'none',
+                  backgroundColor: isActivePhase ? 'var(--color-accent)' : 'var(--color-border-subtle)',
                   marginBottom: '8px',
-                  transition: 'background-color 0.5s ease',
+                  transition: 'background-color 0.3s ease',
                 }}
               />
               <span
                 style={{
-                  fontSize: '0.7rem',
-                  fontWeight: isActivePhase ? '700' : '500',
-                  color: isActivePhase ? 'var(--color-primary)' : 'var(--text-muted)',
-                  fontFamily: 'var(--font-display)',
+                  fontSize: '0.75rem',
+                  fontWeight: isActivePhase ? '600' : '400',
+                  color: isActivePhase ? 'var(--text-primary)' : 'var(--text-muted)',
                   textAlign: 'center',
                 }}
               >
-                {phase.num}. {phase.label}
+                {phase.label}
               </span>
             </div>
           );
@@ -335,29 +320,32 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
       </div>
 
       {/* Control Buttons Row */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: 12 }}>
         <button
-          className="btn"
+          className="btn-outline"
           style={{
-            width: '44px', height: '44px', padding: 0, borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            border: '1px solid rgba(65, 101, 98, 0.12)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: 'var(--shadow-sm)'
+            width: '56px',
+            height: '56px',
+            padding: 0,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           onClick={handleToggleActive}
         >
-          {isActive ? <Pause size={20} style={{ color: 'var(--text-primary)' }} /> : <Play size={20} style={{ color: 'var(--text-primary)' }} />}
+          {isActive ? <Pause size={20} color="var(--text-primary)" /> : <Play size={20} color="var(--text-primary)" />}
         </button>
         <button
-          className="btn"
+          className="btn-outline sos"
           style={{
-            width: '44px', height: '44px', padding: 0, borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            border: '1px solid rgba(65, 101, 98, 0.12)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--color-sos)',
-            boxShadow: 'var(--shadow-sm)'
+            width: '56px',
+            height: '56px',
+            padding: 0,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           onClick={handleSessionFinished}
         >
@@ -366,97 +354,90 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
       </div>
 
       {/* Session Timer */}
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', marginTop: 12 }}>
         <div style={{
           fontFamily: 'var(--font-display)',
-          fontSize: '2rem',
-          fontWeight: '700',
-          fontFeatureSettings: '"tnum"',
-          color: 'var(--color-primary)',
-          letterSpacing: '-0.03em',
+          fontSize: '3rem',
+          fontWeight: '400',
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.02em',
         }}>
           {formatTime(timeLeft)}
         </div>
       </div>
 
       {/* Breathing Circle — 4-4-4 box breathing */}
-      <div className="breathing-circle-outer" style={{ margin: '0 auto' }}>
+      <div className="breathing-circle-outer" style={{ margin: '16px auto' }}>
         <div className="breathing-circle-inner" style={getBreathStyles()}>
-          <div className="breathing-timer" style={{ fontFamily: 'var(--font-display)' }}>{breathTimeLeft}</div>
-          <div className="breathing-text" style={{ fontFamily: 'var(--font-display)', fontWeight: '600' }}>
-            {getBreathLabel()}
-          </div>
+          <div className="breathing-timer">{breathTimeLeft}</div>
+          <div className="breathing-text">{getBreathLabel()}</div>
         </div>
       </div>
 
       {/* Guide text */}
-      <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', padding: '0 10px', lineHeight: '1.4' }}>
+      <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.95rem', padding: '0 20px', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {isActive ? (
-          <p className="pulse-animation" style={{ fontWeight: '500' }}>
+          <p style={{ fontWeight: '400', fontStyle: 'italic' }}>
             {getBreathGuide()}
           </p>
         ) : (
-          <p style={{ color: 'var(--color-sos)', fontWeight: '600' }}>Session paused. Take a deep breath and resume when you feel ready.</p>
+          <p style={{ color: 'var(--color-sos)', fontWeight: '500' }}>
+            Session paused. Take a moment to recover.
+          </p>
         )}
       </div>
 
       {/* Dynamic Phase description card */}
-      <div className="glass-panel" style={{ padding: '16px', textAlign: 'center', borderRadius: '24px', fontSize: '0.9rem', lineHeight: '1.5' }}>
+      <div className="card-subtle" style={{ textAlign: 'center', fontSize: '0.85rem', lineHeight: '1.5' }}>
         {sessionPhase === 'opening' && (
-          <p style={{ margin: 0, color: 'var(--color-primary)' }}>
-            <strong>Preparation & Acclimation:</strong> Settle in comfortably, listen to the opening guidance, and begin regulating your breath.
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+            <strong>Preparation:</strong> Settle in comfortably, follow the voiceover guide, and steady your breath.
           </p>
         )}
         {sessionPhase === 'briefing' && (
-          <p style={{ margin: 0, color: 'var(--color-secondary)' }}>
-            <strong>Guidance Phase:</strong> Background noise rises in a controlled and muffled manner. Keep a calm breathing rhythm.
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+            <strong>Introduction:</strong> Background noise begins rising softly. Keep your breath slow and steady.
           </p>
         )}
         {sessionPhase === 'exposure' && (
-          <p style={{ margin: 0, color: 'var(--color-sos)' }}>
-            <strong>Active Exposure:</strong> Environmental noises have risen to a noticeable volume. Cope safely using your breath anchor.
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+            <strong>Active Exposure:</strong> Sounds have reached their target level. Anchor yourself to your breathing.
           </p>
         )}
         {sessionPhase === 'closing' && (
-          <p style={{ margin: 0, color: 'var(--color-primary)', fontWeight: '600' }}>
-            <strong>Summary & Relaxation:</strong> Background noises fade towards the end. Listen to the summary and relax your body.
+          <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: '500' }}>
+            <strong>Closing:</strong> The noise is fading. Take a moment to relax and reflect.
           </p>
         )}
       </div>
 
       {/* SOS Emergency triggers */}
       <button 
-        className="btn btn-sos" 
-        style={{ 
-          padding: '16px', 
-          borderRadius: '9999px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          boxShadow: '0 8px 24px rgba(186, 26, 26, 0.25)'
-        }} 
+        className="btn-outline sos" 
+        style={{ marginTop: 8 }} 
         onClick={onTriggerSOS}
       >
-        <ShieldAlert size={22} />
-        Emergency Protocol SOS
+        <ShieldAlert size={18} />
+        Emergency SOS Protocol
       </button>
 
       {/* Live Audio Adjustments */}
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderRadius: '32px' }}>
-        <h3 style={{ fontSize: '1.05rem', borderBottom: '1px solid rgba(65, 101, 98, 0.08)', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>
-          <Volume2 size={18} />
-          Real-time Exposure Control
-        </h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '-12px', lineHeight: '1.4' }}>
-          If the environment noise is too loud or overwhelming, use the sliders to lower or muffle it instead of stopping.
-        </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 16 }}>
+        <div>
+          <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Volume2 size={14} />
+            Real-time Exposure Control
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: 4 }}>
+            If the noise feels too intense, adjust these sliders in real-time instead of stopping.
+          </p>
+        </div>
 
         {/* Live Noise Volume */}
         <div className="control-group">
           <div className="control-header">
-            <span>Environment Noise Volume</span>
-            <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.noiseVolume * 100)}%</span>
+            <span>Environment Volume</span>
+            <span className="control-value">{Math.round(settings.noiseVolume * 100)}%</span>
           </div>
           <input
             type="range"
@@ -473,7 +454,7 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
         <div className="control-group">
           <div className="control-header">
             <span>Noise Muffle</span>
-            <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.muffleLevel * 100)}%</span>
+            <span className="control-value">{Math.round(settings.muffleLevel * 100)}%</span>
           </div>
           <input
             type="range"
@@ -484,17 +465,17 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
             onChange={(e) => onSettingsChange({ muffleLevel: parseFloat(e.target.value) })}
             disabled={!isActive}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-            <span>Clear & Direct</span>
-            <span style={{ marginLeft: 'auto' }}>Muffled & Distant</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            <span>Clear</span>
+            <span>Muffled</span>
           </div>
         </div>
 
         {/* Live Music Volume */}
         <div className="control-group">
           <div className="control-header">
-            <span>Soothing Music Volume</span>
-            <span className="control-value" style={{ fontWeight: '600' }}>{Math.round(settings.musicVolume * 100)}%</span>
+            <span>Music Volume</span>
+            <span className="control-value">{Math.round(settings.musicVolume * 100)}%</span>
           </div>
           <input
             type="range"

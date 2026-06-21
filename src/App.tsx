@@ -1,17 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
-import { Headphones, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { AudioEngine, type AudioEngineSettings, type SessionPhase } from './utils/audioEngine';
+import { HomeScreen } from './components/HomeScreen';
+import { SettingsSheet } from './components/SettingsSheet';
 import { SessionSetup } from './components/SessionSetup';
 import { ActiveSession } from './components/ActiveSession';
 import { EmergencyProtocol } from './components/EmergencyProtocol';
+import { PostSessionFeedback } from './components/PostSessionFeedback';
 import { SessionHistory } from './components/SessionHistory';
 
+type ViewState = 'home' | 'setup' | 'active' | 'sos' | 'feedback' | 'history';
+
 function App() {
-  const [view, setView] = useState<'setup' | 'active' | 'sos' | 'history'>('setup');
+  const [view, setView] = useState<ViewState>('home');
   const [isLoadingMedia, setIsLoadingMedia] = useState<boolean>(false);
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>('opening');
+  const [showSettings, setShowSettings] = useState(false);
   
-  // Settings state
+  // User profile state
+  const [userName, setUserName] = useState<string>('');
+  const [reminderTime, setReminderTime] = useState<string>('19:00');
+  const [reminderEnabled, setReminderEnabled] = useState<boolean>(true);
+  
+  // Audio settings state
   const [settings, setSettings] = useState<AudioEngineSettings>({
     musicVolume: 0.5,
     noiseVolume: 0.2,
@@ -23,9 +34,13 @@ function App() {
     noiseVariantIndex: -1,
   });
   
-  const [duration, setDuration] = useState<number>(5); // 5 minutes default
-  const [initialSuds, setInitialSuds] = useState<number>(5); // 5 default
+  const [duration, setDuration] = useState<number>(5);
+  const [initialSuds, setInitialSuds] = useState<number>(5);
   const [audioEngineMsg, setAudioEngineMsg] = useState<string>('');
+  
+  // Session result state (for post-session feedback)
+  const [lastSessionFinalSuds, setLastSessionFinalSuds] = useState<number>(5);
+  const [lastSessionDuration, setLastSessionDuration] = useState<number>(0);
   
   const audioEngineRef = useRef<AudioEngine | null>(null);
 
@@ -42,18 +57,27 @@ function App() {
 
     audioEngineRef.current = engine;
 
-    // Load saved preferences if any
+    // Load saved preferences
     const savedSettings = localStorage.getItem('hearo_user_settings');
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
-        // Ensure default properties are present
         if (!parsed.voiceoverLanguage) parsed.voiceoverLanguage = 'en';
         if (parsed.spikeCount === undefined) parsed.spikeCount = 4;
         if (parsed.noiseVariantIndex === undefined) parsed.noiseVariantIndex = -1;
         setSettings(parsed);
       } catch (e) {}
     }
+
+    // Load user profile
+    const savedName = localStorage.getItem('hearo_user_name');
+    if (savedName) setUserName(savedName);
+    
+    const savedReminder = localStorage.getItem('hearo_reminder_time');
+    if (savedReminder) setReminderTime(savedReminder);
+    
+    const savedReminderEnabled = localStorage.getItem('hearo_reminder_enabled');
+    if (savedReminderEnabled !== null) setReminderEnabled(savedReminderEnabled === 'true');
 
     return () => {
       if (audioEngineRef.current) {
@@ -62,28 +86,48 @@ function App() {
     };
   }, []);
 
-  // Sync state settings to localStorage whenever they change
+  // Get session count from localStorage
+  const getSessionCount = (): number => {
+    const savedLogs = localStorage.getItem('hearo_session_logs');
+    if (savedLogs) {
+      try {
+        return JSON.parse(savedLogs).length;
+      } catch (e) {}
+    }
+    return 0;
+  };
+
   const handleSettingsChange = (newSettings: Partial<AudioEngineSettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
       localStorage.setItem('hearo_user_settings', JSON.stringify(updated));
-      
-      // Update audio engine on the fly if active
       if (audioEngineRef.current) {
         audioEngineRef.current.updateSettings(updated);
       }
-      
       return updated;
     });
+  };
+
+  const handleNameChange = (name: string) => {
+    setUserName(name);
+    localStorage.setItem('hearo_user_name', name);
+  };
+
+  const handleReminderTimeChange = (time: string) => {
+    setReminderTime(time);
+    localStorage.setItem('hearo_reminder_time', time);
+  };
+
+  const handleReminderToggle = (enabled: boolean) => {
+    setReminderEnabled(enabled);
+    localStorage.setItem('hearo_reminder_enabled', String(enabled));
   };
 
   const handleStartSession = async () => {
     if (audioEngineRef.current) {
       setIsLoadingMedia(true);
-      // Wait for preload (randomizes background noise, registers triggers, buffers audio files)
       await audioEngineRef.current.preload(settings);
       setIsLoadingMedia(false);
-      
       audioEngineRef.current.start();
       setSessionPhase('opening');
     }
@@ -124,15 +168,21 @@ function App() {
     if (audioEngineRef.current) {
       audioEngineRef.current.stop();
     }
-    setView('setup');
+    setView('home');
   };
 
-  const handleSaveSession = (finalSuds: number, durationCompleted: number) => {
+  // When session ends, go to feedback instead of directly saving
+  const handleSessionComplete = (finalSuds: number, durationCompleted: number) => {
     if (audioEngineRef.current) {
       audioEngineRef.current.stop();
     }
+    setLastSessionFinalSuds(finalSuds);
+    setLastSessionDuration(durationCompleted);
+    setView('feedback');
+  };
 
-    // Save to localStorage
+  // Save session log with optional feedback data
+  const handleFeedbackComplete = (feedback: { difficulty: number | null; triggerBothered: string | null; notes: string }) => {
     const savedLogs = localStorage.getItem('hearo_session_logs');
     let logs = [];
     if (savedLogs) {
@@ -145,15 +195,39 @@ function App() {
       id: Math.random().toString(36).substring(2, 9),
       date: new Date().toISOString(),
       environment: settings.exposureType,
-      duration: durationCompleted,
+      duration: lastSessionDuration,
       initialSuds: initialSuds,
-      finalSuds: finalSuds,
+      finalSuds: lastSessionFinalSuds,
+      feedback,
     };
 
     logs.unshift(newLog);
     localStorage.setItem('hearo_session_logs', JSON.stringify(logs));
+    setView('home');
+  };
 
-    setView('history');
+  const handleSkipFeedback = () => {
+    // Save session without feedback
+    const savedLogs = localStorage.getItem('hearo_session_logs');
+    let logs = [];
+    if (savedLogs) {
+      try {
+        logs = JSON.parse(savedLogs);
+      } catch (e) {}
+    }
+
+    const newLog = {
+      id: Math.random().toString(36).substring(2, 9),
+      date: new Date().toISOString(),
+      environment: settings.exposureType,
+      duration: lastSessionDuration,
+      initialSuds: initialSuds,
+      finalSuds: lastSessionFinalSuds,
+    };
+
+    logs.unshift(newLog);
+    localStorage.setItem('hearo_session_logs', JSON.stringify(logs));
+    setView('home');
   };
 
   const handleClearHistory = () => {
@@ -162,127 +236,52 @@ function App() {
 
   return (
     <>
-      {/* Floating Decorative Soap Bubbles */}
-      <div className="floating-bubbles">
-        <div className="floating-bubble" />
-        <div className="floating-bubble" />
-        <div className="floating-bubble" />
-        <div className="floating-bubble" />
-        <div className="floating-bubble" />
-        <div className="floating-bubble" />
-        <div className="floating-bubble" />
-      </div>
-
-      {/* App Header (Hidden during active session or SOS to keep screen completely minimal and safe) */}
-      {view !== 'active' && view !== 'sos' && !isLoadingMedia && (
-        <header className="app-header">
-          <div className="app-logo">
-            <div 
-              style={{ 
-                width: '36px', 
-                height: '36px', 
-                borderRadius: '10px', 
-                background: 'var(--color-primary-soft)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                color: 'var(--color-primary)' 
-              }}
-            >
-              <Headphones size={20} />
-            </div>
-            <span className="logo-text">HearO</span>
-          </div>
-
-          <nav className="nav-tabs">
-            <button 
-              className={`tab-btn ${view === 'setup' ? 'active' : ''}`}
-              onClick={() => setView('setup')}
-            >
-              Exposure Therapy
-            </button>
-            <button 
-              className={`tab-btn ${view === 'history' ? 'active' : ''}`}
-              onClick={() => setView('history')}
-            >
-              History
-            </button>
-          </nav>
-        </header>
-      )}
-
-      {/* Media Loading Overlay */}
-      {isLoadingMedia && (
-        <div 
-          className="view-container"
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            textAlign: 'center',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            background: 'var(--bg-app)',
-            zIndex: 999
-          }}
-        >
-          <div className="glass-panel" style={{ padding: '40px 30px', maxWidth: '340px' }}>
-            <div className="pulse-animation" style={{ display: 'inline-flex', marginBottom: '20px', color: 'var(--color-primary)' }}>
-              <Headphones size={56} />
-            </div>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', color: 'var(--text-primary)' }}>
-              Preparing therapy space...
-            </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              Loading and synchronizing high-quality sound files and voice guidance.
-            </p>
-            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
-              <div 
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  border: '3px solid rgba(255, 255, 255, 0.1)',
-                  borderTopColor: 'var(--color-primary)',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Fallback Synthesizer Toast indicator */}
+      {/* Toast Notification */}
       {audioEngineMsg && (
-        <div 
-          style={{ 
-            position: 'absolute', 
-            top: '80px', 
-            left: '50%', 
-            transform: 'translateX(-50%)', 
-            zIndex: 100, 
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid var(--color-primary-soft)',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            fontSize: '0.75rem',
-            color: 'var(--color-primary)',
-            boxShadow: 'var(--shadow-md)',
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            animation: 'pulse-soft 2s infinite'
-          }}
-        >
+        <div className="toast">
           <Activity size={12} />
           {audioEngineMsg}
         </div>
       )}
 
-      {/* Main View Router */}
+      {/* Media Loading Overlay */}
+      {isLoadingMedia && (
+        <div className="loading-overlay">
+          <div className="spinner" />
+          <div>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', marginBottom: '8px' }}>
+              Preparing your session...
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+              Loading sound files and voice guidance.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Bottom Sheet */}
+      <SettingsSheet
+        isOpen={showSettings}
+        userName={userName}
+        reminderTime={reminderTime}
+        reminderEnabled={reminderEnabled}
+        onClose={() => setShowSettings(false)}
+        onNameChange={handleNameChange}
+        onReminderTimeChange={handleReminderTimeChange}
+        onReminderToggle={handleReminderToggle}
+      />
+
+      {/* ===== View Router ===== */}
+
+      {view === 'home' && !isLoadingMedia && (
+        <HomeScreen
+          userName={userName}
+          sessionCount={getSessionCount()}
+          onBeginSession={() => setView('setup')}
+          onOpenSettings={() => setShowSettings(true)}
+        />
+      )}
+
       {view === 'setup' && !isLoadingMedia && (
         <SessionSetup
           settings={settings}
@@ -293,6 +292,7 @@ function App() {
           onInitialSudsChange={setInitialSuds}
           onStartSession={handleStartSession}
           onTriggerSOS={handleTriggerSOS}
+          onBack={() => setView('home')}
         />
       )}
 
@@ -306,7 +306,7 @@ function App() {
           onPauseToggle={handlePauseToggle}
           onTick={handleSessionTick}
           onTriggerSOS={handleTriggerSOS}
-          onSaveSession={handleSaveSession}
+          onSaveSession={handleSessionComplete}
           onCancelSession={handleExitSession}
         />
       )}
@@ -315,6 +315,13 @@ function App() {
         <EmergencyProtocol
           onCloseSOS={handleCloseSOS}
           onExitSession={handleExitSession}
+        />
+      )}
+
+      {view === 'feedback' && (
+        <PostSessionFeedback
+          onComplete={handleFeedbackComplete}
+          onSkipAll={handleSkipFeedback}
         />
       )}
 
