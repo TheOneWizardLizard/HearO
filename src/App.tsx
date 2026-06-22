@@ -24,6 +24,7 @@ function App() {
   
   // Audio settings state
   const [settings, setSettings] = useState<AudioEngineSettings>({
+    musicEnabled: true,
     musicVolume: 0.5,
     noiseVolume: 0.2,
     muffleLevel: 0.5,
@@ -32,6 +33,9 @@ function App() {
     exposureType: 'cafe',
     voiceoverLanguage: 'en',
     noiseVariantIndex: -1,
+    selectedTrigger: 'doorSlam',
+    triggerVolume: 0.5,
+    triggerMuffleLevel: 0.3,
   });
   
   const [duration, setDuration] = useState<number>(5);
@@ -65,6 +69,10 @@ function App() {
         if (!parsed.voiceoverLanguage) parsed.voiceoverLanguage = 'en';
         if (parsed.spikeCount === undefined) parsed.spikeCount = 4;
         if (parsed.noiseVariantIndex === undefined) parsed.noiseVariantIndex = -1;
+        if (parsed.musicEnabled === undefined) parsed.musicEnabled = true;
+        if (parsed.selectedTrigger === undefined) parsed.selectedTrigger = 'doorSlam';
+        if (parsed.triggerVolume === undefined) parsed.triggerVolume = 0.5;
+        if (parsed.triggerMuffleLevel === undefined) parsed.triggerMuffleLevel = 0.3;
         setSettings(parsed);
       } catch (e) {}
     }

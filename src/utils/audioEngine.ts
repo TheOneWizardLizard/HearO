@@ -2,7 +2,23 @@ export type ExposureType = 'cafe' | 'street' | 'beach' | 'forest';
 
 export type SessionPhase = 'opening' | 'briefing' | 'exposure' | 'closing';
 
+export type TriggerType = 'motorcycle' | 'doorSlam' | 'fireworks' | 'dog' | 'helicopter' | 'restaurant' | 'siren' | 'horn' | 'baby' | 'none';
+
+export const TRIGGER_TYPES: { type: TriggerType; label: string }[] = [
+  { type: 'motorcycle', label: 'Motorcycle' },
+  { type: 'doorSlam', label: 'Door Slam' },
+  { type: 'fireworks', label: 'Fireworks' },
+  { type: 'dog', label: 'Barking Dog' },
+  { type: 'helicopter', label: 'Helicopter' },
+  { type: 'restaurant', label: 'Restaurant' },
+  { type: 'siren', label: 'Siren' },
+  { type: 'horn', label: 'Car Horn' },
+  { type: 'baby', label: 'Crying Baby' },
+  { type: 'none', label: 'None' },
+];
+
 export interface AudioEngineSettings {
+  musicEnabled: boolean;    // Toggle background melody on/off
   musicVolume: number;      // 0.0 - 1.0
   noiseVolume: number;      // 0.0 - 1.0
   muffleLevel: number;      // 0.0 - 1.0 (1 = fully muffled, 0 = clear)
@@ -11,6 +27,9 @@ export interface AudioEngineSettings {
   exposureType: ExposureType;
   voiceoverLanguage?: 'he' | 'en';
   noiseVariantIndex: number; // 0-3 = specific variant, -1 = random each session
+  selectedTrigger: TriggerType;   // Which trigger to use
+  triggerVolume: number;          // 0.0 - 1.0
+  triggerMuffleLevel: number;     // 0.0 - 1.0 (1 = fully muffled, 0 = clear)
 }
 
 export const NOISE_VARIANT_COUNT = 4;
@@ -148,13 +167,7 @@ const TRIGGERS = {
   ],
 };
 
-const ENVIRONMENT_TRIGGERS: Record<ExposureType, (keyof typeof TRIGGERS)[]> = {
-  cafe: ['doorSlam', 'baby', 'restaurant'],
-  street: ['motorcycle', 'horn', 'siren', 'dog'],
-  beach: ['dog', 'helicopter', 'baby'],
-  forest: ['dog', 'helicopter', 'siren'],
-};
-
+// Note: Environment-based trigger selection was removed. Triggers are now user-selected via selectedTrigger.
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   
@@ -163,9 +176,11 @@ export class AudioEngine {
   private musicGain: GainNode | null = null;
   private noiseGain: GainNode | null = null;
   private voiceoverGain: GainNode | null = null;
+  private triggerGain: GainNode | null = null;
   
-  // Filter node
+  // Filter nodes
   private noiseFilter: BiquadFilterNode | null = null;
+  private triggerFilter: BiquadFilterNode | null = null;
   
   // Preloaded buffers
   private loadedMusicBuffer: AudioBuffer | null = null;
@@ -197,6 +212,7 @@ export class AudioEngine {
   public onFallbackTriggered: ((msg: string) => void) | null = null;
   
   private settings: AudioEngineSettings = {
+    musicEnabled: true,
     musicVolume: 0.5,
     noiseVolume: 0.2,
     muffleLevel: 0.5,
@@ -205,6 +221,9 @@ export class AudioEngine {
     exposureType: 'cafe',
     voiceoverLanguage: 'he',
     noiseVariantIndex: -1,
+    selectedTrigger: 'doorSlam',
+    triggerVolume: 0.5,
+    triggerMuffleLevel: 0.3,
   };
 
   private isPlaying: boolean = false;
@@ -242,6 +261,17 @@ export class AudioEngine {
     
     this.noiseGain.connect(this.noiseFilter);
     this.noiseFilter.connect(this.masterGain);
+
+    // Trigger channel (independent gain + lowpass filter)
+    this.triggerFilter = this.ctx.createBiquadFilter();
+    this.triggerFilter.type = 'lowpass';
+    this.updateTriggerMuffleFilter();
+
+    this.triggerGain = this.ctx.createGain();
+    this.triggerGain.gain.setValueAtTime(0, this.ctx.currentTime); // Start muted, controlled by phase machine
+
+    this.triggerGain.connect(this.triggerFilter);
+    this.triggerFilter.connect(this.masterGain);
 
     // Voiceover guidance channel (bypasses noise filter, plays straight to master)
     this.voiceoverGain = this.ctx.createGain();
@@ -293,10 +323,15 @@ export class AudioEngine {
     }
 
     try {
-      // 1. Determine and load Wellness Music
-      const musicUrl = MUSIC_FILES[this.settings.exposureType] || MUSIC_FILES.default;
-      this.loadedMusicBuffer = await this.loadAudioBuffer(musicUrl);
-      this.loadedMusicNorm = this.loadedMusicBuffer ? this.getBufferNormFactor(this.loadedMusicBuffer) : 1;
+      // 1. Load constant Wellness Music (same for all environments) if enabled
+      if (this.settings.musicEnabled) {
+        const musicUrl = MUSIC_FILES.default;
+        this.loadedMusicBuffer = await this.loadAudioBuffer(musicUrl);
+        this.loadedMusicNorm = this.loadedMusicBuffer ? this.getBufferNormFactor(this.loadedMusicBuffer) : 1;
+      } else {
+        this.loadedMusicBuffer = null;
+        this.loadedMusicNorm = 1;
+      }
 
       // 2. Select and load Background Noise (specific variant or random)
       const noiseOptions = BACKGROUND_NOISES[this.settings.exposureType] || BACKGROUND_NOISES.cafe;
@@ -314,16 +349,17 @@ export class AudioEngine {
       this.loadedVoiceoverMiddle = await this.loadAudioBuffer(voSet.middle);
       this.loadedVoiceoverClosing = await this.loadAudioBuffer(voSet.closing);
 
-      // 4. Select and load relevant triggers for this environment
+      // 4. Load all variants for the user-selected trigger type
       this.loadedTriggerBuffers = [];
-      const triggerCategories = ENVIRONMENT_TRIGGERS[this.settings.exposureType];
-      for (const cat of triggerCategories) {
-        const pool = TRIGGERS[cat];
+      if (this.settings.selectedTrigger !== 'none') {
+        const selectedKey = this.settings.selectedTrigger as keyof typeof TRIGGERS;
+        const pool = TRIGGERS[selectedKey];
         if (pool && pool.length > 0) {
-          const randomUrl = pool[Math.floor(Math.random() * pool.length)];
-          const buffer = await this.loadAudioBuffer(randomUrl);
-          if (buffer) {
-            this.loadedTriggerBuffers.push({ name: cat, buffer, norm: this.getBufferNormFactor(buffer) });
+          for (const url of pool) {
+            const buffer = await this.loadAudioBuffer(url);
+            if (buffer) {
+              this.loadedTriggerBuffers.push({ name: selectedKey, buffer, norm: this.getBufferNormFactor(buffer) });
+            }
           }
         }
       }
@@ -354,8 +390,8 @@ export class AudioEngine {
     this.isPlaying = true;
     this.isPaused = false;
 
-    // Start wellness music looping
-    if (this.loadedMusicBuffer) {
+    // Start wellness music looping (only if enabled)
+    if (this.settings.musicEnabled && this.loadedMusicBuffer) {
       this.musicSource = this.ctx.createBufferSource();
       this.musicSource.buffer = this.loadedMusicBuffer;
       this.musicSource.loop = true;
@@ -364,8 +400,8 @@ export class AudioEngine {
       this.musicSource.connect(musicNormGain);
       musicNormGain.connect(this.musicGain!);
       this.musicSource.start(0);
-    } else {
-      // Fallback synthesis if preload failed
+    } else if (this.settings.musicEnabled && !this.loadedMusicBuffer) {
+      // Fallback synthesis if preload failed but music is enabled
       this.startWellnessMusicSynthFallback();
     }
 
@@ -461,6 +497,13 @@ export class AudioEngine {
           this.noiseGain.gain.linearRampToValueAtTime(this.settings.noiseVolume, now + 5.0);
         }
 
+        // Ramp trigger gain to target level for exposure phase
+        if (this.triggerGain) {
+          this.triggerGain.gain.cancelScheduledValues(now);
+          this.triggerGain.gain.setValueAtTime(0, now);
+          this.triggerGain.gain.linearRampToValueAtTime(this.settings.triggerVolume, now + 5.0);
+        }
+
         // Ensure background loop is playing
         if (this.loadedNoiseBuffer && !this.noiseSource) {
           this.noiseSource = this.ctx.createBufferSource();
@@ -476,11 +519,17 @@ export class AudioEngine {
       }
 
       case 'closing': {
-        // Stage 4: Calming/Closing. Ramp background noise to 0. Play closing voiceover. Disable triggers.
+        // Stage 4: Calming/Closing. Ramp background noise and triggers to 0. Play closing voiceover.
         if (this.noiseGain) {
           this.noiseGain.gain.cancelScheduledValues(now);
           this.noiseGain.gain.setValueAtTime(this.noiseGain.gain.value, now);
           this.noiseGain.gain.linearRampToValueAtTime(0, now + 3.0);
+        }
+
+        if (this.triggerGain) {
+          this.triggerGain.gain.cancelScheduledValues(now);
+          this.triggerGain.gain.setValueAtTime(this.triggerGain.gain.value, now);
+          this.triggerGain.gain.linearRampToValueAtTime(0, now + 3.0);
         }
 
         if (this.loadedVoiceoverClosing) {
@@ -547,9 +596,9 @@ export class AudioEngine {
     this.triggeredSpikeSeconds.clear();
   }
 
-  // Play a random preloaded trigger sound
+  // Play a random preloaded trigger sound through the independent trigger channel
   private triggerSuddenSpike() {
-    if (!this.ctx || !this.noiseGain || this.loadedTriggerBuffers.length === 0) return;
+    if (!this.ctx || !this.triggerGain || this.loadedTriggerBuffers.length === 0) return;
     
     const now = this.ctx.currentTime;
     const item = this.loadedTriggerBuffers[Math.floor(Math.random() * this.loadedTriggerBuffers.length)];
@@ -561,8 +610,8 @@ export class AudioEngine {
       const trigNormGain = this.ctx.createGain();
       trigNormGain.gain.value = item.norm;
       source.connect(trigNormGain);
-      // Connect to noiseGain so it inherits live volume adjustments and the Lowpass filter!
-      trigNormGain.connect(this.noiseGain);
+      // Connect to triggerGain (independent channel with its own volume + filter)
+      trigNormGain.connect(this.triggerGain);
       source.start(now);
       
       this.activeTriggerSources.push(source);
@@ -619,7 +668,7 @@ export class AudioEngine {
     this.stopWellnessMusicSynthFallback();
   }
 
-  // Emergency SOS: immediate fade-out of exposure noises, music drops to 15%
+  // Emergency SOS: immediate fade-out of exposure noises and triggers, music drops to 15%
   public triggerSOS() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -630,6 +679,12 @@ export class AudioEngine {
       this.noiseGain.gain.cancelScheduledValues(now);
       this.noiseGain.gain.setValueAtTime(this.noiseGain.gain.value, now);
       this.noiseGain.gain.linearRampToValueAtTime(0, now + 1.0);
+    }
+
+    if (this.triggerGain) {
+      this.triggerGain.gain.cancelScheduledValues(now);
+      this.triggerGain.gain.setValueAtTime(this.triggerGain.gain.value, now);
+      this.triggerGain.gain.linearRampToValueAtTime(0, now + 1.0);
     }
 
     if (this.musicGain) {
@@ -653,6 +708,12 @@ export class AudioEngine {
       this.noiseGain.gain.cancelScheduledValues(now);
       this.noiseGain.gain.setValueAtTime(0, now);
       this.noiseGain.gain.linearRampToValueAtTime(this.settings.noiseVolume, now + 2.0);
+    }
+
+    if (this.triggerGain && this.currentPhase === 'exposure') {
+      this.triggerGain.gain.cancelScheduledValues(now);
+      this.triggerGain.gain.setValueAtTime(0, now);
+      this.triggerGain.gain.linearRampToValueAtTime(this.settings.triggerVolume, now + 2.0);
     }
 
     if (this.musicGain) {
@@ -687,12 +748,24 @@ export class AudioEngine {
       }
     }
 
+    if (newSettings.triggerVolume !== undefined && this.triggerGain) {
+      if (this.currentPhase === 'exposure') {
+        this.triggerGain.gain.cancelScheduledValues(now);
+        this.triggerGain.gain.setValueAtTime(this.triggerGain.gain.value, now);
+        this.triggerGain.gain.linearRampToValueAtTime(this.settings.triggerVolume, now + 0.5);
+      }
+    }
+
     if (newSettings.muffleLevel !== undefined) {
       this.updateMuffleFilter();
     }
+
+    if (newSettings.triggerMuffleLevel !== undefined) {
+      this.updateTriggerMuffleFilter();
+    }
   }
 
-  // Muffle filter Low-pass adjuster
+  // Muffle filter Low-pass adjuster for background noise
   private updateMuffleFilter() {
     if (!this.noiseFilter || !this.ctx) return;
     const now = this.ctx.currentTime;
@@ -704,6 +777,20 @@ export class AudioEngine {
     
     this.noiseFilter.frequency.cancelScheduledValues(now);
     this.noiseFilter.frequency.exponentialRampToValueAtTime(Math.max(20, targetHz), now + 0.5);
+  }
+
+  // Muffle filter Low-pass adjuster for triggers (independent from noise)
+  private updateTriggerMuffleFilter() {
+    if (!this.triggerFilter || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    
+    const minHz = 200;
+    const maxHz = 16000;
+    const exponent = 1 - this.settings.triggerMuffleLevel;
+    const targetHz = minHz + (maxHz - minHz) * Math.pow(exponent, 3);
+    
+    this.triggerFilter.frequency.cancelScheduledValues(now);
+    this.triggerFilter.frequency.exponentialRampToValueAtTime(Math.max(20, targetHz), now + 0.5);
   }
 
   // SYNTHESIS FALLBACKS (If preloading fails, e.g. server offline)

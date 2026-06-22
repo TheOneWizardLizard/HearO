@@ -429,14 +429,33 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
             Real-time Exposure Control
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: 4 }}>
-            If the noise feels too intense, adjust these sliders in real-time instead of stopping.
+            Adjust volume and muffle for each layer in real-time.
           </p>
         </div>
 
-        {/* Live Noise Volume */}
+        {/* Live Music Volume — only if music is enabled */}
+        {settings.musicEnabled && (
+          <div className="control-group">
+            <div className="control-header">
+              <span>🎵 Music Volume</span>
+              <span className="control-value">{Math.round(settings.musicVolume * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={settings.musicVolume}
+              onChange={(e) => onSettingsChange({ musicVolume: parseFloat(e.target.value) })}
+              disabled={!isActive}
+            />
+          </div>
+        )}
+
+        {/* Live Environment Volume */}
         <div className="control-group">
           <div className="control-header">
-            <span>Environment Volume</span>
+            <span>🌿 Environment Volume</span>
             <span className="control-value">{Math.round(settings.noiseVolume * 100)}%</span>
           </div>
           <input
@@ -450,10 +469,10 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           />
         </div>
 
-        {/* Live Muffle Filter */}
+        {/* Live Environment Muffle */}
         <div className="control-group">
           <div className="control-header">
-            <span>Noise Muffle</span>
+            <span>🌿 Environment Muffle</span>
             <span className="control-value">{Math.round(settings.muffleLevel * 100)}%</span>
           </div>
           <input
@@ -471,22 +490,46 @@ export const ActiveSession: React.FC<ActiveSessionProps> = ({
           </div>
         </div>
 
-        {/* Live Music Volume */}
-        <div className="control-group">
-          <div className="control-header">
-            <span>Music Volume</span>
-            <span className="control-value">{Math.round(settings.musicVolume * 100)}%</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={settings.musicVolume}
-            onChange={(e) => onSettingsChange({ musicVolume: parseFloat(e.target.value) })}
-            disabled={!isActive}
-          />
-        </div>
+        {/* Live Trigger Volume — only if a trigger is selected */}
+        {settings.selectedTrigger !== 'none' && (
+          <>
+            <div className="control-group">
+              <div className="control-header">
+                <span>⚡ Trigger Volume</span>
+                <span className="control-value">{Math.round(settings.triggerVolume * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={settings.triggerVolume}
+                onChange={(e) => onSettingsChange({ triggerVolume: parseFloat(e.target.value) })}
+                disabled={!isActive}
+              />
+            </div>
+
+            <div className="control-group">
+              <div className="control-header">
+                <span>⚡ Trigger Muffle</span>
+                <span className="control-value">{Math.round(settings.triggerMuffleLevel * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={settings.triggerMuffleLevel}
+                onChange={(e) => onSettingsChange({ triggerMuffleLevel: parseFloat(e.target.value) })}
+                disabled={!isActive}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                <span>Clear</span>
+                <span>Muffled</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
       
       {/* Footer Nav spacer */}

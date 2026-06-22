@@ -1,7 +1,7 @@
 import React from 'react';
-import { Coffee, Car, Waves, Trees, ShieldAlert, Shuffle, ArrowLeft } from 'lucide-react';
+import { Coffee, Car, Waves, Trees, ShieldAlert, Shuffle, ArrowLeft, Music, Volume2, Zap } from 'lucide-react';
 import type { ExposureType, AudioEngineSettings } from '../utils/audioEngine';
-import { NOISE_VARIANT_COUNT } from '../utils/audioEngine';
+import { NOISE_VARIANT_COUNT, TRIGGER_TYPES } from '../utils/audioEngine';
 
 interface SessionSetupProps {
   settings: AudioEngineSettings;
@@ -101,10 +101,62 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
         </p>
       </div>
 
-      {/* Environment Selector */}
-      <div className="control-group" style={{ marginTop: 12 }}>
-        <div className="section-label">Exposure Environment</div>
-        <div className="env-grid" style={{ marginTop: 12 }}>
+      {/* ===== LAYER 1: BACKGROUND MUSIC ===== */}
+      <div style={{ marginTop: 16 }}>
+        <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Music size={14} />
+          Layer 1 — Background Music
+        </div>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: 4, marginBottom: 12 }}>
+          A constant soothing melody that plays throughout the session.
+        </p>
+
+        {/* Music Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>Enable Background Music</span>
+          <button
+            className={`pill-btn ${settings.musicEnabled ? 'active' : ''}`}
+            onClick={() => onSettingsChange({ musicEnabled: !settings.musicEnabled })}
+            style={{ minWidth: 60 }}
+          >
+            {settings.musicEnabled ? 'On' : 'Off'}
+          </button>
+        </div>
+
+        {/* Music Volume — only visible when enabled */}
+        {settings.musicEnabled && (
+          <div className="control-group">
+            <div className="control-header">
+              <span>Music Volume</span>
+              <span className="control-value">{Math.round(settings.musicVolume * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={settings.musicVolume}
+              onChange={(e) => onSettingsChange({ musicVolume: parseFloat(e.target.value) })}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div style={{ borderTop: '1px solid var(--color-border-subtle)', marginTop: 20, marginBottom: 20 }} />
+
+      {/* ===== LAYER 2: AMBIENT ENVIRONMENT ===== */}
+      <div>
+        <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Volume2 size={14} />
+          Layer 2 — Ambient Environment
+        </div>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: 4, marginBottom: 12 }}>
+          Choose the environment situation and set its volume and muffle level.
+        </p>
+
+        {/* Environment Selector */}
+        <div className="env-grid" style={{ marginTop: 8 }}>
           {environments.map((env) => {
             const isActive = settings.exposureType === env.type;
             return (
@@ -131,61 +183,40 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             );
           })}
         </div>
-      </div>
 
-      {/* Noise Variant Selector */}
-      <div className="control-group" style={{ marginTop: 16 }}>
-        <div className="section-label">Background Noise Variant</div>
-        <div className="pill-group" style={{ marginTop: 8 }}>
-          <button
-            className={`pill-btn ${settings.noiseVariantIndex === -1 ? 'active' : ''}`}
-            onClick={() => onSettingsChange({ noiseVariantIndex: -1 })}
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <Shuffle size={12} />
-            Random
-          </button>
-          {Array.from({ length: NOISE_VARIANT_COUNT }, (_, i) => (
+        {/* Noise Variant Selector */}
+        <div className="control-group" style={{ marginTop: 12 }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: 6 }}>Background Noise Variant</div>
+          <div className="pill-group" style={{ marginTop: 4 }}>
             <button
-              key={i}
-              className={`pill-btn ${settings.noiseVariantIndex === i ? 'active' : ''}`}
-              onClick={() => onSettingsChange({ noiseVariantIndex: i })}
+              className={`pill-btn ${settings.noiseVariantIndex === -1 ? 'active' : ''}`}
+              onClick={() => onSettingsChange({ noiseVariantIndex: -1 })}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              {i + 1}
+              <Shuffle size={12} />
+              Random
             </button>
-          ))}
-        </div>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-          {settings.noiseVariantIndex === -1
-            ? 'A different noise variant is chosen for each session'
-            : `Variant ${settings.noiseVariantIndex + 1} selected`}
-        </span>
-      </div>
-
-      {/* Audio Controls */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 16 }}>
-        <div className="section-label">Audio Controls</div>
-
-        {/* Music Volume */}
-        <div className="control-group">
-          <div className="control-header">
-            <span>Soothing Music</span>
-            <span className="control-value">{Math.round(settings.musicVolume * 100)}%</span>
+            {Array.from({ length: NOISE_VARIANT_COUNT }, (_, i) => (
+              <button
+                key={i}
+                className={`pill-btn ${settings.noiseVariantIndex === i ? 'active' : ''}`}
+                onClick={() => onSettingsChange({ noiseVariantIndex: i })}
+              >
+                {i + 1}
+              </button>
+            ))}
           </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={settings.musicVolume}
-            onChange={(e) => onSettingsChange({ musicVolume: parseFloat(e.target.value) })}
-          />
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+            {settings.noiseVariantIndex === -1
+              ? 'A different noise variant is chosen for each session'
+              : `Variant ${settings.noiseVariantIndex + 1} selected`}
+          </span>
         </div>
 
         {/* Noise Volume */}
-        <div className="control-group">
+        <div className="control-group" style={{ marginTop: 12 }}>
           <div className="control-header">
-            <span>Background Noise</span>
+            <span>Environment Volume</span>
             <span className="control-value">{Math.round(settings.noiseVolume * 100)}%</span>
           </div>
           <input
@@ -198,10 +229,10 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
           />
         </div>
 
-        {/* Muffle Level */}
-        <div className="control-group">
+        {/* Noise Muffle Level */}
+        <div className="control-group" style={{ marginTop: 12 }}>
           <div className="control-header">
-            <span>Noise Muffle Level</span>
+            <span>Environment Muffle</span>
             <span className="control-value">{Math.round(settings.muffleLevel * 100)}%</span>
           </div>
           <input
@@ -216,29 +247,100 @@ export const SessionSetup: React.FC<SessionSetupProps> = ({
             High muffle attenuates high frequencies, providing distance.
           </span>
         </div>
-
-        {/* Spike Triggers Count */}
-        <div className="control-group">
-          <div className="control-header">
-            <span>Sudden Noises per Session</span>
-            <span className="control-value">{settings.spikeCount}</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="15"
-            step="1"
-            value={settings.spikeCount}
-            onChange={(e) => onSettingsChange({ spikeCount: parseInt(e.target.value) })}
-          />
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-            Status: {getSpikeLabel(settings.spikeCount)}
-          </span>
-        </div>
       </div>
 
+      {/* Divider */}
+      <div style={{ borderTop: '1px solid var(--color-border-subtle)', marginTop: 20, marginBottom: 20 }} />
+
+      {/* ===== LAYER 3: TRIGGER SOUND ===== */}
+      <div>
+        <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Zap size={14} />
+          Layer 3 — Trigger Sound
+        </div>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: 4, marginBottom: 12 }}>
+          Choose a single trigger type, how many times it plays, and its volume/muffle level.
+        </p>
+
+        {/* Trigger Selector — Individual labeled buttons */}
+        <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: 8 }}>Select Trigger</div>
+        <div className="pill-group" style={{ flexWrap: 'wrap', gap: 8 }}>
+          {TRIGGER_TYPES.map((t) => (
+            <button
+              key={t.type}
+              className={`pill-btn ${settings.selectedTrigger === t.type ? 'active' : ''}`}
+              onClick={() => onSettingsChange({ selectedTrigger: t.type })}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Trigger-specific controls — hidden when "None" is selected */}
+        {settings.selectedTrigger !== 'none' && (
+          <>
+            {/* Triggers per Session */}
+            <div className="control-group" style={{ marginTop: 16 }}>
+              <div className="control-header">
+                <span>Triggers per Session</span>
+                <span className="control-value">{settings.spikeCount}</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="15"
+                step="1"
+                value={settings.spikeCount}
+                onChange={(e) => onSettingsChange({ spikeCount: parseInt(e.target.value) })}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                {getSpikeLabel(settings.spikeCount)}
+              </span>
+            </div>
+
+            {/* Trigger Volume */}
+            <div className="control-group" style={{ marginTop: 12 }}>
+              <div className="control-header">
+                <span>Trigger Volume</span>
+                <span className="control-value">{Math.round(settings.triggerVolume * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={settings.triggerVolume}
+                onChange={(e) => onSettingsChange({ triggerVolume: parseFloat(e.target.value) })}
+              />
+            </div>
+
+            {/* Trigger Muffle Level */}
+            <div className="control-group" style={{ marginTop: 12 }}>
+              <div className="control-header">
+                <span>Trigger Muffle</span>
+                <span className="control-value">{Math.round(settings.triggerMuffleLevel * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={settings.triggerMuffleLevel}
+                onChange={(e) => onSettingsChange({ triggerMuffleLevel: parseFloat(e.target.value) })}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                Higher values muffle the trigger, making it feel more distant.
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div style={{ borderTop: '1px solid var(--color-border-subtle)', marginTop: 20, marginBottom: 20 }} />
+
       {/* Language Selector */}
-      <div className="control-group" style={{ marginTop: 16 }}>
+      <div className="control-group">
         <div className="section-label">Guidance Language</div>
         <div className="pill-group" style={{ marginTop: 8 }}>
           <button
